@@ -75,7 +75,7 @@ export function DashboardLayout({
           </div>
         </header>
         <div className="px-6 lg:px-10 py-8 lg:py-10">
-          <div className="mb-8">
+          <div className="mb-8 sticky top-16 lg:top-20 z-10 bg-[var(--background)] pb-4">
             <h1 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)' }}>{title}</h1>
             {subtitle && <p className="mt-1">{subtitle}</p>}
           </div>
