@@ -1,0 +1,17 @@
+import logoUtm from './image/logoutm.png';
+
+export function Logo({ light = false }: { light?: boolean }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <img src={logoUtm} alt="Logo UTM" className="w-9 h-9 object-contain shrink-0 drop-shadow-sm" />
+      <div className="flex flex-col leading-tight">
+        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: light ? 'white' : 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+          UPA-BK <span className="gradient-text">UTM</span>
+        </span>
+        <span style={{ fontSize: '0.6rem', color: light ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>
+          Universitas Trunodjoyo Madura
+        </span>
+      </div>
+    </div>
+  );
+}
