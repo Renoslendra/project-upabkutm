@@ -13,6 +13,7 @@ import BantuanFaq from './pages/BantuanFaq';
 import BantuanChatbot from './pages/BantuanChatbot';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAsesmen from './pages/AdminAsesmen';
+import AdminKonseling from './pages/AdminKonseling';
 import AdminLaporan from './pages/AdminLaporan';
 import AdminArtikel from './pages/AdminArtikel';
 import AdminKegiatan from './pages/AdminKegiatan';
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: 'bantuan/chatbot', Component: BantuanChatbot },
       { path: 'admin', Component: AdminDashboard },
       { path: 'admin/asesmen', Component: AdminAsesmen },
+      { path: 'admin/konseling', Component: AdminKonseling },
       { path: 'admin/laporan', Component: AdminLaporan },
       { path: 'admin/artikel', Component: AdminArtikel },
       { path: 'admin/kegiatan', Component: AdminKegiatan },
