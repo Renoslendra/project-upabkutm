@@ -1,10 +1,11 @@
-import { LayoutDashboard, Users, MessageCircle, CalendarDays, ClipboardList, BookOpen, FileBarChart, Bell, Settings, Download, Calendar as CalIcon, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Users, MessageCircle, CalendarDays, ClipboardList, BookOpen, FileText, FileBarChart, Bell, Settings, Download, Calendar as CalIcon, Sparkles } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 export const adminItems = [
   { to: '/admin', label: 'Dashboard', Icon: LayoutDashboard },
   { to: '/admin/asesmen', label: 'Asesmen Mahasiswa', Icon: ClipboardList },
+  { to: '/admin/konseling', label: 'Data Konseling', Icon: FileText },
   { to: '/admin/artikel', label: 'Artikel & Edukasi', Icon: BookOpen },
   { to: '/admin/kegiatan', label: 'Kegiatan', Icon: Sparkles },
   { to: '/admin/laporan', label: 'Laporan', Icon: FileBarChart },
