@@ -4,25 +4,49 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import { Logo } from './Logo';
 
 const navItems = [
-  { to: '/', label: 'Beranda' },
-  { to: '/asesmen', label: 'Asesmen' },
-  { 
-    label: 'Tentang', 
+  { to: '/', label: 'Home' },
+  {
+    label: 'Profil',
     to: '/tentang',
     children: [
-      { to: '/tentang', label: 'Profil UPA BK' },
-      { to: '/kegiatan', label: 'Kegiatan & Workshop' },
-    ]
+      { to: '/tentang', label: 'Profil' },
+      { to: '/tentang#visi-misi', label: 'Visi-Misi' },
+      { to: '/tentang#struktur-organisasi', label: 'Struktur Organisasi' },
+    ],
   },
-  { to: '/artikel', label: 'Artikel' },
-  { 
-    label: 'Bantuan', 
-    to: '/bantuan',
+  {
+    label: 'Layanan',
+    to: '/booking',
     children: [
-      { to: '/bantuan/alur', label: 'Alur Layanan' },
+      { to: '/booking', label: 'Konseling Mahasiswa' },
+      { to: '/booking', label: 'Konseling Dosen dan Tendik' },
+      { to: '/booking', label: 'Konseling External' },
+    ],
+  },
+  {
+    label: 'Dokumen',
+    to: '/dokumen/sop-konseling',
+    children: [
+      { to: '/dokumen/sop-konseling', label: 'SOP Konseling' },
+      { to: '/artikel', label: 'Artikel' },
+      { to: '/kegiatan', label: 'Kegiatan' },
+      { to: '/universitas', label: 'Universitas' },
+    ],
+  },
+  {
+    label: 'Statistik',
+    to: '/statistik/prodi',
+    children: [
+      { to: '/statistik/prodi', label: 'Tabel Per Prodi (manual)' },
+    ],
+  },
+  {
+    label: 'Bantuan',
+    to: '/bantuan/faq',
+    children: [
+      { to: '/bantuan/cp', label: 'CP' },
       { to: '/bantuan/faq', label: 'FAQ' },
-      { to: '/bantuan/chatbot', label: 'Chatbot' },
-    ]
+    ],
   },
 ];
 
