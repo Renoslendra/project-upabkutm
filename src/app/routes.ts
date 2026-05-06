@@ -9,6 +9,7 @@ import Artikel from './pages/Artikel';
 import ArtikelDetail from './pages/ArtikelDetail';
 import Kegiatan from './pages/Kegiatan';
 import BantuanAlur from './pages/BantuanAlur';
+import BantuanCp from './pages/BantuanCp';
 import BantuanFaq from './pages/BantuanFaq';
 import BantuanChatbot from './pages/BantuanChatbot';
 import AdminDashboard from './pages/AdminDashboard';
@@ -19,6 +20,9 @@ import AdminArtikel from './pages/AdminArtikel';
 import AdminKegiatan from './pages/AdminKegiatan';
 import AdminLogin from './pages/AdminLogin';
 import Evaluasi from './pages/Evaluasi';
+import SopKonseling from './pages/SopKonseling';
+import StatistikProdi from './pages/StatistikProdi';
+import Universitas from './pages/Universitas';
 import NotFound from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -36,8 +40,12 @@ export const router = createBrowserRouter([
       { path: 'kegiatan', Component: Kegiatan },
       { path: 'admin-rahasia', Component: AdminLogin },
       { path: 'bantuan/alur', Component: BantuanAlur },
+      { path: 'bantuan/cp', Component: BantuanCp },
       { path: 'bantuan/faq', Component: BantuanFaq },
       { path: 'bantuan/chatbot', Component: BantuanChatbot },
+      { path: 'dokumen/sop-konseling', Component: SopKonseling },
+      { path: 'universitas', Component: Universitas },
+      { path: 'statistik/prodi', Component: StatistikProdi },
       { path: 'admin', Component: AdminDashboard },
       { path: 'admin/asesmen', Component: AdminAsesmen },
       { path: 'admin/konseling', Component: AdminKonseling },

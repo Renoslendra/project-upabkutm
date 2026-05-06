@@ -29,9 +29,9 @@ export default function Tentang() {
         subtitle="UPA-BK UTM hadir sebagai ruang aman untuk seluruh civitas akademika Universitas Trunojoyo Madura — mendukung kesehatan mental, akademik, dan pengembangan diri."
       />
 
-      <section className="section">
+      <section className="section" id="profil">
         <div className="container-x grid md:grid-cols-2 gap-6">
-          <div className="card-soft">
+          <div className="card-soft" id="visi-misi">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5" style={{ background: 'var(--primary-fixed)' }}>
               <Eye size={22} style={{ color: 'var(--primary-dark)' }} />
             </div>
@@ -62,7 +62,7 @@ export default function Tentang() {
         </div>
       </section>
 
-      <section className="section" style={{ background: 'var(--surface-sunken)' }}>
+      <section className="section" style={{ background: 'var(--surface-sunken)' }} id="struktur-organisasi">
         <div className="container-x">
           <div className="eyebrow mb-3">Struktur Organisasi</div>
           <h2 className="mb-10" style={{ fontSize: 'clamp(1.75rem,3vw,2.5rem)' }}>Tim yang Mendampingi Anda</h2>
