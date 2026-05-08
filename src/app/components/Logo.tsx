@@ -1,9 +1,11 @@
-import logoUtm from './image/logoutm.png';
+import logoUtm from './image/logoutm.png?url';
+import logoUpabk from './image/logoupabk.png?url';
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
       <img src={logoUtm} alt="Logo UTM" className="w-9 h-9 object-contain shrink-0 drop-shadow-sm" />
+      <img src={logoUpabk} alt="Logo UPA-BK" className="w-9 h-9 object-contain shrink-0 drop-shadow-sm" />
       <div className="flex flex-col leading-tight">
         <span style={{ fontWeight: 700, fontSize: '0.95rem', color: light ? 'white' : 'var(--text-primary)', letterSpacing: '-0.01em' }}>
           UPA-BK <span className="gradient-text">UTM</span>
