@@ -104,10 +104,10 @@ export default function BantuanFaq() {
             </div>
             <h2 className="mb-3 text-xl" style={{ color: 'var(--primary-dark)' }}>Masih Punya Pertanyaan?</h2>
             <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Jika Anda tidak menemukan jawaban yang Anda cari, jangan ragu untuk menghubungi kami atau tanya ke Chatbot AI kami.
+              Jika Anda tidak menemukan jawaban yang Anda cari, jangan ragu untuk menghubungi tim UPA-BK UTM.
             </p>
             <div className="flex justify-center gap-4">
-              <a href="/bantuan/chatbot" className="btn-primary">Tanya Chatbot</a>
+              <a href="/bantuan/cp" className="btn-primary">Hubungi Kami</a>
             </div>
           </div>
         </div>

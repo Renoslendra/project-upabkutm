@@ -13,11 +13,11 @@ import BantuanCp from './pages/BantuanCp';
 import BantuanFaq from './pages/BantuanFaq';
 import BantuanChatbot from './pages/BantuanChatbot';
 import AdminDashboard from './pages/AdminDashboard';
-import AdminAsesmen from './pages/AdminAsesmen';
-import AdminKonseling from './pages/AdminKonseling';
-import AdminLaporan from './pages/AdminLaporan';
 import AdminArtikel from './pages/AdminArtikel';
 import AdminKegiatan from './pages/AdminKegiatan';
+import AdminStatistik from './pages/AdminStatistik';
+import AdminBantuan from './pages/AdminBantuan';
+import AdminProfil from './pages/AdminProfil';
 import AdminLogin from './pages/AdminLogin';
 import Evaluasi from './pages/Evaluasi';
 import SopKonseling from './pages/SopKonseling';
@@ -47,11 +47,11 @@ export const router = createBrowserRouter([
       { path: 'universitas', Component: Universitas },
       { path: 'statistik/prodi', Component: StatistikProdi },
       { path: 'admin', Component: AdminDashboard },
-      { path: 'admin/asesmen', Component: AdminAsesmen },
-      { path: 'admin/konseling', Component: AdminKonseling },
-      { path: 'admin/laporan', Component: AdminLaporan },
       { path: 'admin/artikel', Component: AdminArtikel },
       { path: 'admin/kegiatan', Component: AdminKegiatan },
+      { path: 'admin/statistik', Component: AdminStatistik },
+      { path: 'admin/bantuan', Component: AdminBantuan },
+      { path: 'admin/profil', Component: AdminProfil },
       { path: 'evaluasi', Component: Evaluasi },
       { path: '*', Component: NotFound },
     ],
