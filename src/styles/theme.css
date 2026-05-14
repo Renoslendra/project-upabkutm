@@ -1,37 +1,41 @@
 @custom-variant dark (&:is(.dark *));
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --font-size: 16px;
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
-  --primary: #a1477a;
-  --primary-light: #C77DBA;
-  --primary-dark: #5E2D55;
-  --primary-fixed: #FFD7F3;
-  --primary-gradient: linear-gradient(135deg, #a1477a 0%, #C77DBA 50%, #E8A0D6 100%);
+  --primary: #120632;
+  --primary-light: #3B0764;
+  --primary-dark: #0A0320;
+  --primary-fixed: #F3E8FF;
+  --primary-gradient: linear-gradient(135deg, #120632 0%, #3B0764 50%, #6B21A8 100%);
 
-  --background: #FFF8FA;
+  --background: #FAFAFF;
   --surface: #FFFFFF;
-  --surface-sunken: #FDF2F5;
-  --surface-input: #F3ECEE;
-  --surface-hover: #EDE6E8;
-  --surface-dark: #2D1B33;
+  --surface-sunken: #F5F3FF;
+  --surface-input: #EEEAF3;
+  --surface-hover: #EDE9FE;
+  --surface-dark: #120632;
 
-  --text-primary: #111827; /* Dipergelap untuk kontras tinggi */
-  --text-secondary: #374151; /* Dark gray sebelumnya agak pudar (6B5E62) */
-  --text-tertiary: #4B5563; /* Medium gray sebelumnya pudar (9A8D91) */
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-tertiary: #4B5563;
   --text-on-primary: #FFFFFF;
-  --text-on-dark: #F3F4F6; /* Dipersegar dari e8d5e0 */
+  --text-on-dark: #F3F4F6;
 
   --success: #7BC67E;
   --warning: #F0C674;
   --error: #BA1A1A;
-  --info: #7B68AE;
+  --info: #7C3AED;
 
-  --shadow-sm: 0 2px 8px -2px rgba(161, 71, 122, 0.08);
-  --shadow-md: 0 8px 24px -8px rgba(161, 71, 122, 0.14);
-  --shadow-lg: 0 24px 60px -20px rgba(161, 71, 122, 0.22);
-  --shadow-glow: 0 12px 32px -8px rgba(199, 125, 186, 0.45);
+  --shadow-sm: 0 2px 8px -2px rgba(18, 6, 50, 0.10);
+  --shadow-md: 0 8px 24px -8px rgba(18, 6, 50, 0.16);
+  --shadow-lg: 0 24px 60px -20px rgba(18, 6, 50, 0.24);
+  --shadow-glow: 0 12px 32px -8px rgba(59, 7, 100, 0.45);
 
   --radius: 1.5rem;
 
@@ -49,17 +53,17 @@
   --accent-foreground: var(--primary-dark);
   --destructive: var(--error);
   --destructive-foreground: #fff;
-  --border: rgba(161, 71, 122, 0.10);
-  --input: rgba(161, 71, 122, 0.12);
+  --border: rgba(59, 7, 100, 0.10);
+  --input: rgba(59, 7, 100, 0.12);
   --input-background: var(--surface-input);
   --ring: var(--primary-light);
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
 
-  --chart-1: #a1477a;
-  --chart-2: #C77DBA;
-  --chart-3: #7B68AE;
+  --chart-1: #120632;
+  --chart-2: #A855F7;
+  --chart-3: #7C3AED;
   --chart-4: #F0C674;
   --chart-5: #7BC67E;
 }
@@ -196,7 +200,7 @@
     font-weight: 500;
     cursor: pointer;
   }
-  .btn-secondary:hover { background: #E2D6DC; }
+  .btn-secondary:hover { background: #DDD6FE; }
 
   .btn-ghost {
     background: transparent;
@@ -238,7 +242,7 @@
   .input-field:focus {
     outline: none;
     border-color: var(--primary-light);
-    box-shadow: 0 0 0 4px rgba(199, 125, 186, 0.18);
+    box-shadow: 0 0 0 4px rgba(107, 33, 168, 0.18);
     background: white;
   }
 
@@ -292,10 +296,10 @@
 
 
   .glass-nav {
-    background: rgba(255, 248, 250, 0.80);
-    backdrop-filter: saturate(160%) blur(14px);
-    -webkit-backdrop-filter: saturate(160%) blur(14px);
-    border-bottom: 1px solid rgba(161, 71, 122, 0.08);
+    background: rgba(18, 6, 50, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(59, 7, 100, 0.25);
   }
 
   .container-x {

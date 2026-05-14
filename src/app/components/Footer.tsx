@@ -54,7 +54,7 @@ export function Footer() {
         <div>
           <h4 className="text-white mb-4">Navigasi</h4>
           <ul className="space-y-2 text-sm" style={{ color: 'var(--text-on-dark)' }}>
-            <li><Link to="/" className="hover:text-white hover:translate-x-1 inline-block transition-all">Home</Link></li>
+            <li><Link to="/" className="hover:text-white hover:translate-x-1 inline-block transition-all">Beranda</Link></li>
             <li><Link to="/tentang" className="hover:text-white hover:translate-x-1 inline-block transition-all">Profil</Link></li>
             <li><Link to="/booking" className="hover:text-white hover:translate-x-1 inline-block transition-all">Layanan</Link></li>
             <li><Link to="/dokumen/sop-konseling" className="hover:text-white hover:translate-x-1 inline-block transition-all">Dokumen</Link></li>

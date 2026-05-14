@@ -1,4 +1,4 @@
-import { PageHeader } from '../components/PageHeader';
+import { HeroBanner } from '../components/HeroBanner';
 
 const data = [
   { prodi: 'Psikologi', total: 124, konseling: 84, selesai: 70 },
@@ -10,7 +10,7 @@ const data = [
 export default function StatistikProdi() {
   return (
     <>
-      <PageHeader
+      <HeroBanner
         eyebrow="Statistik"
         title="Tabel Per Prodi"
         subtitle="Lihat ringkasan data manual konseling berdasarkan program studi."

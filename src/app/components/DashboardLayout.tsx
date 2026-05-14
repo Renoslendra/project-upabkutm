@@ -49,10 +49,10 @@ export function DashboardLayout({
           <Link to="/booking" className="block mt-3 text-center py-2 rounded-full text-xs" style={{ background: 'white', color: 'var(--primary-dark)', fontWeight: 500 }}>Konseling</Link>
         </div>
       </aside>
-      {open && <div className="lg:hidden fixed inset-0 bg-[rgba(45,27,51,0.4)] z-30" onClick={() => setOpen(false)} />}
+      {open && <div className="lg:hidden fixed inset-0 bg-[rgba(30,16,51,0.4)] z-30" onClick={() => setOpen(false)} />}
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-20 glass-nav">
+        <header className="sticky top-0 z-20 bg-white border-b" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between px-6 lg:px-10 h-16 lg:h-20 gap-4">
             <button className="lg:hidden btn-ghost p-2" onClick={() => setOpen(true)}><Menu size={20} /></button>
             <div className="hidden md:block flex-1 max-w-md relative">

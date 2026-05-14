@@ -1,15 +1,14 @@
 import { useState } from 'react';
-import { MapPin, Calendar, ArrowRight, Users, Search, ChevronDown } from 'lucide-react';
-import { PageHeader } from '../components/PageHeader';
+import { MapPin, ArrowRight, Search, ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 import bgUtm from '../components/image/gambarutm.webp';
 
 const filters = ['Semua', 'Workshop', 'Seminar', 'Pelatihan', 'Webinar'];
 const events = [
-  { id: 1, type: 'Workshop', title: 'Mindfulness untuk Mahasiswa', date: '28 APR', loc: 'Auditorium UTM', desc: 'Workshop praktis tentang teknik mindfulness sehari-hari.', img: 'photo-1544027993-37dbfe43562a' },
-  { id: 2, type: 'Seminar', title: 'Mengelola Stres Akademik', date: '02 MEI', loc: 'Online (Zoom)', desc: 'Seminar dari psikolog klinis tentang manajemen stres.', img: 'photo-1559223607-a43c990c692c' },
-  { id: 3, type: 'Pelatihan', title: 'Public Speaking & Anxiety', date: '10 MEI', loc: 'Gedung Cakra', desc: 'Pelatihan mengatasi kecemasan saat berbicara di depan umum.', img: 'photo-1505373877841-8d25f7d46678' },
-  { id: 4, type: 'Webinar', title: 'Self-Compassion 101', date: '18 MEI', loc: 'Online (YouTube Live)', desc: 'Diskusi mendalam tentang welas asih pada diri sendiri.', img: 'photo-1523580494863-6f3031224c94' },
+  { id: 1, type: 'Workshop', title: 'Mindfulness untuk Mahasiswa', date: '28 APR', loc: 'Auditorium UTM', desc: 'Workshop praktis tentang teknik mindfulness sehari-hari.', img: 'photo-1544027993-37dbfe43562a', url: 'https://www.instagram.com/konseling_utm/' },
+  { id: 2, type: 'Seminar', title: 'Mengelola Stres Akademik', date: '02 MEI', loc: 'Online (Zoom)', desc: 'Seminar dari psikolog klinis tentang manajemen stres.', img: 'photo-1559223607-a43c990c692c', url: 'https://www.instagram.com/konseling_utm/' },
+  { id: 3, type: 'Pelatihan', title: 'Public Speaking & Anxiety', date: '10 MEI', loc: 'Gedung Cakra', desc: 'Pelatihan mengatasi kecemasan saat berbicara di depan umum.', img: 'photo-1505373877841-8d25f7d46678', url: 'https://www.instagram.com/konseling_utm/' },
+  { id: 4, type: 'Webinar', title: 'Self-Compassion 101', date: '18 MEI', loc: 'Online (YouTube Live)', desc: 'Diskusi mendalam tentang welas asih pada diri sendiri.', img: 'photo-1523580494863-6f3031224c94', url: 'https://www.instagram.com/konseling_utm/' },
 ];
 
 export default function Kegiatan() {
@@ -22,7 +21,7 @@ export default function Kegiatan() {
 
   return (
     <>
-      <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 overflow-hidden flex items-center justify-center">
+      <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 overflow-hidden flex items-center justify-center -mt-16 md:-mt-20">
         {/* Background Image & Overlay */}
         <div className="absolute inset-0">
           <img 
@@ -54,11 +53,11 @@ export default function Kegiatan() {
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <div className="relative w-full sm:max-w-[240px]">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none" style={{ color: 'var(--text-tertiary)' }} />
-                <input className="input-field pl-11 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-pink-300 focus:shadow-[0_0_0_4px_rgba(236,72,153,0.1)]" placeholder="Cari kegiatan…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <input className="input-field pl-11 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]" placeholder="Cari kegiatan…" value={q} onChange={(e) => setQ(e.target.value)} />
               </div>
               <div className="relative w-full sm:max-w-[160px]">
                 <select 
-                  className="input-field appearance-none pr-10 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-pink-300 focus:shadow-[0_0_0_4px_rgba(236,72,153,0.1)]" 
+                  className="input-field appearance-none pr-10 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]" 
                   value={sortOrder} 
                   onChange={(e) => setSortOrder(e.target.value)}
                   style={{ cursor: 'pointer' }}
@@ -73,7 +72,7 @@ export default function Kegiatan() {
               {filters.map((f) => {
                 const sel = active === f;
                 return (
-                  <button key={f} onClick={() => setActive(f)} className={`px-4 py-2 rounded-full text-sm transition-all border ${sel ? 'bg-gradient-to-r from-pink-500 to-rose-400 text-white border-transparent shadow-[0_8px_16px_rgba(236,72,153,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white shadow-sm'}`}
+                  <button key={f} onClick={() => setActive(f)} className={`px-4 py-2 rounded-full text-sm transition-all border ${sel ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white shadow-sm'}`}
                     style={{ fontWeight: 500 }}>{f}</button>
                 );
               })}
@@ -99,7 +98,7 @@ export default function Kegiatan() {
                       <MapPin size={12} /> {e.loc}
                     </div>
                     <p className="text-sm mb-4">{e.desc}</p>
-                    <button className="btn-ghost text-sm self-start mt-auto">Lihat Detail <ArrowRight size={14} /></button>
+                    <a href={e.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm self-start mt-auto">Lihat Detail <ArrowRight size={14} /></a>
                   </div>
                 </div>
               </article>
@@ -108,29 +107,6 @@ export default function Kegiatan() {
         </div>
       </section>
 
-      {/* Detail preview */}
-      <section className="section relative">
-        <div className="container-x relative z-10">
-          <div className="eyebrow mb-3">Featured</div>
-          <h2 className="mb-8" style={{ fontSize: 'clamp(1.5rem,2.5vw,2rem)' }}>Mindfulness untuk Mahasiswa</h2>
-          <div className="card-soft p-0 overflow-hidden grid lg:grid-cols-2 bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] transition-all duration-300">
-            <div className="aspect-[4/3] lg:aspect-auto">
-              <ImageWithFallback src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=900&q=80" alt="Featured" className="w-full h-full object-cover" />
-            </div>
-            <div className="p-8 md:p-10 space-y-4">
-              <span className="badge badge-info">Workshop</span>
-              <h3 style={{ fontSize: '1.5rem' }}>Mindfulness untuk Mahasiswa</h3>
-              <div className="flex flex-wrap gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                <span className="flex items-center gap-1"><Calendar size={14} /> 28 April 2026, 09:00</span>
-                <span className="flex items-center gap-1"><MapPin size={14} /> Auditorium UTM</span>
-                <span className="flex items-center gap-1"><Users size={14} /> 50 peserta</span>
-              </div>
-              <p>Workshop interaktif bersama Dr. Aminah, M.Psi tentang penerapan mindfulness dalam keseharian mahasiswa untuk mengurangi stres akademik dan meningkatkan fokus.</p>
-              <button className="btn-primary">Daftar Kegiatan <ArrowRight size={16} /></button>
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

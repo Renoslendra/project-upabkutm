@@ -40,28 +40,30 @@ export function Layout() {
   const authRoutes = ['/admin-rahasia'];
   const isDash = dashboardRoutes.some((p) => pathname.startsWith(p));
   const isAuth = authRoutes.includes(pathname);
+  // Beranda punya hero slideshow fullbleed sendiri, jadi background generic
+  // tidak ditampilkan supaya tidak bentrok.
+  const isBeranda = pathname === '/';
 
   if (isDash || isAuth) return <Outlet />;
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      {/* Dynamic Mental Health Background Slideshow with Mouse Parallax (Global) */}
+      {/* Background slideshow mental-health di semua halaman publik termasuk Beranda */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-10]">
-        <div 
+        <div
           className="absolute inset-[-5%] w-[110%] h-[110%] transition-transform duration-200 ease-out"
-          style={{ transform: `translate(${mousePos.x * -25}px, ${mousePos.y * -25}px)` }}
+          style={{ transform: `translate(${mousePos.x * -15}px, ${mousePos.y * -15}px)` }}
         >
           {backgroundImages.map((bg, idx) => (
             <img
               key={idx}
               src={bg}
-              alt={`Mental Health Background ${idx + 1}`}
+              alt=""
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ease-in-out ${idx === bgIndex ? 'opacity-100' : 'opacity-0'}`}
             />
           ))}
-          {/* Lighter overlay to ensure readability across all website pages */}
-          <div className="absolute inset-0 bg-white/70 mix-blend-overlay" />
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-100/50 to-purple-100/50" />
+          {/* Overlay putih supaya konten tetap terbaca */}
+          <div className="absolute inset-0 bg-white/85" />
         </div>
       </div>
 

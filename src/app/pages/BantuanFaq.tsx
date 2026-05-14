@@ -34,7 +34,7 @@ export default function BantuanFaq() {
 
   return (
     <>
-      <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 overflow-hidden flex items-center justify-center">
+      <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 overflow-hidden flex items-center justify-center -mt-16 md:-mt-20">
         {/* Background Image & Overlay */}
         <div className="absolute inset-0">
           <img 

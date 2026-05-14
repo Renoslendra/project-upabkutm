@@ -51,7 +51,7 @@ const artikelStatus = [
   { n: 'Draft', v: 14 },
 ];
 
-const COLORS = ['#89467F', '#C77DBA'];
+const COLORS = ['#6B21A8', '#A855F7'];
 
 const recentArtikel = [
   { id: 1, title: 'Mengatasi Kecemasan Menjelang Ujian', views: 1250, status: 'Published' },
@@ -144,8 +144,8 @@ export default function AdminDashboard() {
               <Bar dataKey="v" fill="url(#g1)" radius={[8, 8, 0, 0]} />
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#89467F" />
-                  <stop offset="100%" stopColor="#C77DBA" />
+                  <stop offset="0%" stopColor="#6B21A8" />
+                  <stop offset="100%" stopColor="#A855F7" />
                 </linearGradient>
               </defs>
             </BarChart>
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ background: '#F9F2F4' }}>
+                <tr style={{ background: '#F5F3FF' }}>
                   {['Judul', 'Views', 'Status'].map((h) => (
                     <th
                       key={h}
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ background: '#F9F2F4' }}>
+                <tr style={{ background: '#F5F3FF' }}>
                   {['Nama', 'Tanggal', 'Lokasi', 'Status'].map((h) => (
                     <th
                       key={h}
