@@ -3,7 +3,10 @@ import { NavLink, Link, useLocation } from 'react-router';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Logo } from './Logo';
 
-const navItems = [
+type NavChild = { to: string; label: string };
+type NavItem = { to: string; label: string; children?: NavChild[] };
+
+const navItems: NavItem[] = [
   { to: '/', label: 'Beranda' },
   {
     label: 'Profil',
@@ -50,6 +53,13 @@ const navItems = [
   },
 ];
 
+function isItemActive(item: NavItem, pathname: string) {
+  if (item.children) {
+    return item.children.some((child) => child.to === pathname || pathname.startsWith(child.to + '/'));
+  }
+  return item.to === pathname;
+}
+
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -77,20 +87,23 @@ export function Navbar() {
           {navItems.map((i) => (
             i.children ? (
               <div key={i.label} className="relative group">
-                <button className="px-4 py-2 rounded-full text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 flex items-center gap-1 transition-colors">
+                <button className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1 transition-colors ${isItemActive(i, pathname) ? 'text-white bg-white/15' : 'text-white/90 hover:text-white hover:bg-white/10'}`}>
                   {i.label}
                   <ChevronDown size={14} className="transition-transform duration-200 group-hover:rotate-180" />
                 </button>
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl rounded-2xl border border-[var(--border)] p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-top">
-                  {i.children.map(child => (
-                    <Link
-                      key={child.label}
-                      to={child.to}
-                      className="block px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:text-[var(--primary)] rounded-xl transition-colors"
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
+                  {i.children.map(child => {
+                    const activeChild = child.to === pathname || pathname.startsWith(child.to + '/');
+                    return (
+                      <Link
+                        key={child.label}
+                        to={child.to}
+                        className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${activeChild ? 'bg-[var(--surface-hover)] text-[var(--primary)]' : 'text-[var(--text-primary)] hover:bg-[var(--surface-hover)] hover:text-[var(--primary)]'}`}
+                      >
+                        <span>{child.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ) : (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapPin, ArrowRight, Search, ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 import bgUtm from '../components/image/gambarutm.webp';
@@ -11,39 +11,41 @@ const events = [
   { id: 4, type: 'Webinar', title: 'Self-Compassion 101', date: '18 MEI', loc: 'Online (YouTube Live)', desc: 'Diskusi mendalam tentang welas asih pada diri sendiri.', img: 'photo-1523580494863-6f3031224c94', url: 'https://www.instagram.com/konseling_utm/' },
 ];
 
+
+
 export default function Kegiatan() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
   const [sortOrder, setSortOrder] = useState('Terbaru');
-  
-  const filtered = events.filter((e) => (active === 'Semua' || e.type === active) && e.title.toLowerCase().includes(q.toLowerCase()));
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebouncedQ(q), 300);
+    return () => window.clearTimeout(id);
+  }, [q]);
+
+  const filtered = events.filter((e) => (active === 'Semua' || e.type === active) && e.title.toLowerCase().includes(debouncedQ.toLowerCase()));
   const list = filtered.sort((a, b) => sortOrder === 'Terbaru' ? a.id - b.id : b.id - a.id);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = window.setTimeout(() => setIsLoading(false), 450);
+    return () => window.clearTimeout(timer);
+  }, [active, debouncedQ, sortOrder]);
 
   return (
     <>
       <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 overflow-hidden flex items-center justify-center -mt-16 md:-mt-20">
-        {/* Background Image & Overlay */}
         <div className="absolute inset-0">
-          <img 
-            src={bgUtm} 
-            alt="Kampus UTM" 
-            className="w-full h-full object-cover object-center"
-          />
-          {/* Gradient redup merata di seluruh layar untuk teks di tengah */}
+          <img src={bgUtm} alt="Kampus UTM" className="w-full h-full object-cover object-center" />
           <div className="absolute inset-0 bg-black/60" />
         </div>
 
-        {/* Content - Rata tengah */}
         <div className="container-x relative z-10 max-w-3xl text-center flex flex-col items-center">
-          <div className="inline-block px-3 py-1 mb-5 rounded-full text-xs font-semibold tracking-wider uppercase text-white/90 bg-white/10 backdrop-blur-sm border border-white/20">
-            Kegiatan & Workshop
-          </div>
-          <h1 className="hero-headline mb-6 text-white drop-shadow-md">
-            Ikuti Kegiatan Pengembangan Diri
-          </h1>
-          <p className="text-lg md:text-xl leading-relaxed font-medium text-white/90 drop-shadow">
-            Workshop, seminar, pelatihan, dan webinar rutin yang dirancang untuk pertumbuhan psikologis dan akademik Anda.
-          </p>
+          <div className="inline-block px-3 py-1 mb-5 rounded-full text-xs font-semibold tracking-wider uppercase text-white/90 bg-white/10 backdrop-blur-sm border border-white/20">Kegiatan & Workshop</div>
+          <h1 className="hero-headline mb-6 text-white drop-shadow-md">Ikuti Kegiatan Pengembangan Diri</h1>
+          <p className="text-lg md:text-xl leading-relaxed font-medium text-white/90 drop-shadow">Workshop, seminar, pelatihan, dan webinar rutin yang dirancang untuk pertumbuhan psikologis dan akademik Anda.</p>
         </div>
       </section>
 
@@ -53,12 +55,18 @@ export default function Kegiatan() {
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <div className="relative w-full sm:max-w-[240px]">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none" style={{ color: 'var(--text-tertiary)' }} />
-                <input className="input-field pl-11 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]" placeholder="Cari kegiatan…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <input
+                  className="input-field pl-11 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]"
+                  placeholder="Cari kegiatan…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
+
               </div>
               <div className="relative w-full sm:max-w-[160px]">
-                <select 
-                  className="input-field appearance-none pr-10 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]" 
-                  value={sortOrder} 
+                <select
+                  className="input-field appearance-none pr-10 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]"
+                  value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value)}
                   style={{ cursor: 'pointer' }}
                 >
@@ -68,7 +76,7 @@ export default function Kegiatan() {
                 <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: 'var(--text-tertiary)' }} />
               </div>
             </div>
-            <div className="flex gap-2 flex-wrap md:justify-end">
+            <div className="flex gap-2 flex-wrap md:justify-end items-center">
               {filters.map((f) => {
                 const sel = active === f;
                 return (
@@ -76,34 +84,45 @@ export default function Kegiatan() {
                     style={{ fontWeight: 500 }}>{f}</button>
                 );
               })}
+              {active !== 'Semua' && (
+                <div className="ml-2 px-3 py-2 rounded-full bg-white/90 text-sm font-medium" style={{ color: 'var(--primary)' }}>{active}</div>
+              )}
+              {(active !== 'Semua' || debouncedQ) && (
+                <button onClick={() => { setActive('Semua'); setQ(''); setDebouncedQ(''); }} className="px-3 py-2 rounded-full text-sm bg-white/60 text-gray-700 border border-white/80 ml-2">Clear</button>
+              )}
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {list.map((e) => (
-              <article key={e.title} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
-                <div className="grid sm:grid-cols-[160px_1fr]">
-                  <div className="relative aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
-                    <ImageWithFallback src={`https://images.unsplash.com/${e.img}?w=400&q=80`} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-3 right-3 px-3 py-2 rounded-2xl text-center"
-                      style={{ background: 'rgba(255,255,255,0.95)', boxShadow: 'var(--shadow-sm)' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{e.date.split(' ')[0]}</div>
-                      <div className="text-xs" style={{ color: 'var(--primary)' }}>{e.date.split(' ')[1]}</div>
+          {isLoading ? (
+            <div className="py-12">
+              <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {list.map((e) => (
+                <article key={e.title} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
+                  <div className="grid sm:grid-cols-[160px_1fr]">
+                    <div className="relative aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
+                      <ImageWithFallback src={`https://images.unsplash.com/${e.img}?w=400&q=80`} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute top-3 right-3 px-3 py-2 rounded-2xl text-center" style={{ background: 'rgba(255,255,255,0.95)', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{e.date.split(' ')[0]}</div>
+                        <div className="text-xs" style={{ color: 'var(--primary)' }}>{e.date.split(' ')[1]}</div>
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col">
+                      <span className="badge badge-neutral mb-3 self-start">{e.type}</span>
+                      <h3 className="mb-2" style={{ fontSize: '1.15rem' }}>{e.title}</h3>
+                      <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
+                        <MapPin size={12} /> {e.loc}
+                      </div>
+                      <p className="text-sm mb-4">{e.desc}</p>
+                      <a href={e.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm self-start mt-auto">Lihat Detail <ArrowRight size={14} /></a>
                     </div>
                   </div>
-                  <div className="p-6 flex flex-col">
-                    <span className="badge badge-neutral mb-3 self-start">{e.type}</span>
-                    <h3 className="mb-2" style={{ fontSize: '1.15rem' }}>{e.title}</h3>
-                    <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
-                      <MapPin size={12} /> {e.loc}
-                    </div>
-                    <p className="text-sm mb-4">{e.desc}</p>
-                    <a href={e.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm self-start mt-auto">Lihat Detail <ArrowRight size={14} /></a>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

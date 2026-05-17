@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, ArrowRight, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import bgUtm from '../components/image/utm.jpg';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
@@ -16,7 +16,21 @@ const articles = [
 export default function Artikel() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
-  const list = articles.filter((a) => (active === 'Semua' || a.cat === active) && a.title.toLowerCase().includes(q.toLowerCase()));
+  const [debouncedQ, setDebouncedQ] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebouncedQ(q), 300);
+    return () => window.clearTimeout(id);
+  }, [q]);
+
+  const list = articles.filter((a) => (active === 'Semua' || a.cat === active) && a.title.toLowerCase().includes(debouncedQ.toLowerCase()));
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = window.setTimeout(() => setIsLoading(false), 380);
+    return () => window.clearTimeout(timer);
+  }, [active, debouncedQ]);
 
   return (
     <>
@@ -49,9 +63,15 @@ export default function Artikel() {
           <div className="flex flex-col md:flex-row gap-4 mb-8 items-start md:items-center justify-between">
             <div className="relative w-full md:max-w-sm">
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none" style={{ color: 'var(--text-tertiary)' }} />
-              <input className="input-field pl-11 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]" placeholder="Cari artikel…" value={q} onChange={(e) => setQ(e.target.value)} />
+              <input
+                className="input-field pl-11 bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm focus:bg-white focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(18,6,50,0.1)]"
+                placeholder="Cari artikel…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
               {filters.map((f) => {
                 const sel = active === f;
                 return (
@@ -59,10 +79,20 @@ export default function Artikel() {
                     style={{ fontWeight: 500 }}>{f}</button>
                 );
               })}
+              {active !== 'Semua' && (
+                <div className="ml-2 px-3 py-2 rounded-full bg-white/90 text-sm font-medium" style={{ color: 'var(--primary)' }}>{active}</div>
+              )}
+              {(active !== 'Semua' || debouncedQ) && (
+                <button onClick={() => { setActive('Semua'); setQ(''); setDebouncedQ(''); }} className="px-3 py-2 rounded-full text-sm bg-white/60 text-gray-700 border border-white/80 ml-2">Clear</button>
+              )}
             </div>
           </div>
 
-          {list.length === 0 ? (
+          {isLoading ? (
+            <div className="py-12">
+              <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : list.length === 0 ? (
             <div className="card-soft p-16 text-center max-w-md mx-auto bg-white/95 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
               <div className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: 'var(--surface-hover)' }}>
                 <BookOpen size={32} style={{ color: 'var(--primary)' }} />
