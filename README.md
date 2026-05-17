@@ -96,7 +96,7 @@ Pastikan perangkat Anda sudah terinstal:
 
 ## 📞 Kontak & Dukungan Layanan
 
-<img align="right" width="220" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2kydXU1N2hiOG9lNjZhZnJsOHB5eGg0cmhsemMzdm5kaXkyZzFzMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/JkkLwriNL0kAHNuADp/giphy.gif" alt="Contact Animation"/>
+<img align="right" width="200" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2kydXU1N2hiOG9lNjZhZnJsOHB5eGg0cmhsemMzdm5kaXkyZzFzMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/JkkLwriNL0kAHNuADp/giphy.gif" alt="Contact Animation"/>
 
 | Info | Detail |
 |------|--------|
