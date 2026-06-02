@@ -1,6 +1,6 @@
 import { useState, useEffect, ReactNode } from 'react'; // 1. Tambahkan useEffect di sini
-import { NavLink, Link, useLocation } from 'react-router';
-import { Bell, Menu, X, Search, ChevronDown } from 'lucide-react';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router';
+import { Bell, Menu, X, Search, ChevronDown,LogOut } from 'lucide-react';
 import { Logo } from './Logo';
 
 export interface NavItem {
@@ -21,6 +21,20 @@ export function DashboardLayout({
   // 3. Tambahkan State dan useEffect untuk membaca nama dari localStorage
   const [adminName, setAdminName] = useState("Admin UPA-BK");
 
+  const navigate = useNavigate(); // <-- Tambahkan ini
+
+  const handleLogout = () => {
+    const confirmLogout = window.confirm("Apakah Anda yakin ingin keluar dari Dashboard?");
+    if (confirmLogout) {
+      // 1. Hapus kunci dan nama dari memori browser
+      localStorage.removeItem("token");
+      localStorage.removeItem("adminName");
+      
+      // 2. Tendang kembali ke halaman login
+      navigate("/admin-rahasia"); // Sesuaikan URL login kamu jika berbeda
+    }
+  };
+    
   useEffect(() => {
     const storedName = localStorage.getItem("adminName");
     if (storedName) {
@@ -53,10 +67,14 @@ export function DashboardLayout({
             );
           })}
         </nav>
-        <div className="p-4 m-4 rounded-2xl" style={{ background: 'var(--primary-gradient)', color: 'white' }}>
-          <div className="text-sm" style={{ fontWeight: 600 }}>Butuh bantuan?</div>
-          <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.85)' }}>Tim UPA-BK siap mendengarkan.</div>
-          <Link to="/booking" className="block mt-3 text-center py-2 rounded-full text-xs" style={{ background: 'white', color: 'var(--primary-dark)', fontWeight: 500 }}>Konseling</Link>
+        <div className="p-4 mt-auto mb-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={18} />
+            Keluar (Logout)
+          </button>
         </div>
       </aside>
       {open && <div className="lg:hidden fixed inset-0 bg-[rgba(30,16,51,0.4)] z-30" onClick={() => setOpen(false)} />}

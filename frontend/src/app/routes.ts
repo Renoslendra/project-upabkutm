@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router';
 import { Layout } from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute'
 import Beranda from './pages/Beranda';
 import Tentang from './pages/Tentang';
 import VisiMisi from './pages/VisiMisi';
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
     path: '/',
     Component: Layout,
     children: [
+      // RUTE PUBLIK
       { index: true, Component: Beranda },
       { path: 'tentang', Component: Tentang },
       { path: 'visi-misi', Component: VisiMisi },
@@ -46,13 +48,21 @@ export const router = createBrowserRouter([
       { path: 'dokumen/sop-konseling', Component: SopKonseling },
       { path: 'universitas', Component: Universitas },
       { path: 'statistik/prodi', Component: StatistikProdi },
-      { path: 'admin', Component: AdminDashboard },
-      { path: 'admin/artikel', Component: AdminArtikel },
-      { path: 'admin/kegiatan', Component: AdminKegiatan },
-      { path: 'admin/statistik', Component: AdminStatistik },
-      { path: 'admin/bantuan', Component: AdminBantuan },
-      { path: 'admin/profil', Component: AdminProfil },
       { path: 'evaluasi', Component: Evaluasi },
+
+      // === RUTE ADMIN (Wajib Login)
+      {
+        Component: ProtectedRoute, // Jadikan ProtectedRoute sebagai pembungkus
+        children: [
+          { path: 'admin', Component: AdminDashboard },
+          { path: 'admin/artikel', Component: AdminArtikel },
+          { path: 'admin/kegiatan', Component: AdminKegiatan },
+          { path: 'admin/statistik', Component: AdminStatistik },
+          { path: 'admin/bantuan', Component: AdminBantuan },
+          { path: 'admin/profil', Component: AdminProfil },
+        ],
+      },
+
       { path: '*', Component: NotFound },
     ],
   },
