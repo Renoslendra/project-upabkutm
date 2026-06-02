@@ -1,3 +1,4 @@
+import {useState,useEffect} from 'react';
 import { Link } from 'react-router';
 import {
   LayoutDashboard,
@@ -73,13 +74,21 @@ const kpis = [
 ];
 
 export default function AdminDashboard() {
+  const [adminName, setAdminName] = useState("Admin");
+  useEffect(() => {
+    const storedName = localStorage.getItem("adminName");
+    if (storedName) {
+      setAdminName(storedName);
+    }
+  }, []);
+
   return (
     <DashboardLayout
       items={adminItems}
       title="Dashboard Admin"
       subtitle="Ringkasan artikel edukasi & kegiatan UPA-BK UTM"
       role="Admin"
-      name="Dr. Aminah"
+      name={adminName}
     >
       {/* Quick actions */}
       <div className="flex flex-wrap gap-3 mb-8">

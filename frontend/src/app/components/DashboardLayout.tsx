@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { useState, useEffect, ReactNode } from 'react'; // 1. Tambahkan useEffect di sini
 import { NavLink, Link, useLocation } from 'react-router';
 import { Bell, Menu, X, Search, ChevronDown } from 'lucide-react';
 import { Logo } from './Logo';
@@ -9,14 +9,24 @@ export interface NavItem {
   Icon: any;
 }
 
+// 2. Hapus prop 'name' dari parameter fungsi
 export function DashboardLayout({
-  items, title, subtitle, role = 'Mahasiswa', name = 'Aulia Rahma',
-  children,
+  items, title, subtitle, role = 'Admin', children,
 }: {
-  items: NavItem[]; title: string; subtitle?: string; role?: string; name?: string; children: ReactNode;
+  items: NavItem[]; title: string; subtitle?: string; role?: string; children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+
+  // 3. Tambahkan State dan useEffect untuk membaca nama dari localStorage
+  const [adminName, setAdminName] = useState("Admin UPA-BK");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("adminName");
+    if (storedName) {
+      setAdminName(storedName);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--background)' }}>
@@ -63,10 +73,12 @@ export function DashboardLayout({
 
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm" style={{ background: 'var(--primary-gradient)', color: 'white', fontWeight: 600 }}>
-                  {name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                  {/* 4. Ubah name menjadi adminName di sini */}
+                  {adminName.split(' ').map(n => n[0]).slice(0, 2).join('')}
                 </div>
                 <div className="hidden sm:block">
-                  <div className="text-sm" style={{ fontWeight: 500 }}>{name}</div>
+                  {/* 5. Ubah name menjadi adminName di sini juga */}
+                  <div className="text-sm" style={{ fontWeight: 500 }}>{adminName}</div>
                   <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{role}</div>
                 </div>
                 <ChevronDown size={14} style={{ color: 'var(--text-tertiary)' }} className="hidden sm:block" />
