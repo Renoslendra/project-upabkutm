@@ -2,7 +2,7 @@
 <table border="0" cellspacing="0" cellpadding="0">
   <tr>
     <td align="center">
-      <img src="src/app/components/image/logoupabk.png" width="125" alt="UPA-BK Logo Animation"/>
+      <img src="frontend/src/app/components/image/logoupabk.png" width="125" alt="UPA-BK Logo Animation"/>
     </td>
     <td align="center">
       <img src="https://readme-typing-svg.demolab.com?font=Press+Start+2P&size=35&pause=1000&color=9929ea&center=true&vCenter=true&width=1000&lines=Unit+Penunjang+Akademik;Portal+Bimbingan+Konseling" alt="Typing Animation"/>
@@ -79,7 +79,7 @@ Pastikan perangkat Anda sudah terinstal:
 
 ## 🛠️ Teknologi yang Digunakan
 
-<img align="right" width="200px" height="200px" alt="side_sticker" src="https://media.giphy.com/media/TEnXkcsHrP4YedChhA/giphy.gif" />
+<img align="right" width="150px" height="150px" alt="side_sticker" src="https://media.giphy.com/media/TEnXkcsHrP4YedChhA/giphy.gif" />
 
 | Kategori | Teknologi |
 |----------|-----------|
