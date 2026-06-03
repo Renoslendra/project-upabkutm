@@ -62,18 +62,45 @@ Pastikan perangkat Anda sudah terinstal:
    cd project-upabkutm
    ```
 
-2. **Instal dependensi (*dependencies*)**
+2. **Setup Database**
    ```bash
-   npm install
+   # Pastikan XAMPP MySQL sudah running
+   # Buka MySQL CLI atau phpMyAdmin
+   mysql -uroot upabk < sql/upabk.sql
    ```
+   > Atau import file `sql/upabk.sql` melalui phpMyAdmin
 
-3. **Jalankan server pengembangan lokal (*development server*)**
+3. **Setup Backend**
    ```bash
+   cd backend
+   npm install
+   
+   # Buat file .env (jika belum ada)
+   # Isi dengan:
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=
+   DB_NAME=upabk
+   JWT_SECRET=your_jwt_secret_key_here
+   PORT=5000
+   
+   # Jalankan backend
    npm run dev
    ```
 
-4. Akses aplikasi:  
-   Buka *browser* Anda dan kunjungi tautan lokal yang diberikan di terminal (biasanya berada di `http://localhost:5173/`).
+4. **Setup Frontend** (buka terminal/PowerShell baru)
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+5. **Akses Aplikasi**
+   ```
+   Frontend: http://localhost:5173/
+   Backend:  http://localhost:5000/
+   ```
+   > **Login Admin:** username: `admin`, password: `admin123`
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
