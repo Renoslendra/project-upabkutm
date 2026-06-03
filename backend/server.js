@@ -9,9 +9,17 @@ app.use(express.json());
 
 // --- IMPORT ROUTES ---
 const authRoutes = require("./routes/authRoutes");
+const artikelRoutes = require("./routes/artikelRoutes");
+const kegiatanRoutes = require("./routes/kegiatanRoutes");
+const bantuanRoutes = require("./routes/bantuanRoutes");
+const adminRoutes = require("./routes/manajemenAdminRoutes");
 
 // --- ROUTE MIDDLEWARES ---
 app.use("/api/auth", authRoutes);
+app.use("/api/admin/artikel", artikelRoutes);
+app.use("/api/admin/kegiatan", kegiatanRoutes);
+app.use("/api/admin/bantuan", bantuanRoutes);
+app.use("/api/admin/manajemen-admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend UPA-BK berjalan");

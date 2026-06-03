@@ -102,7 +102,6 @@ export default function AdminBantuan() {
       title="Kelola Bantuan"
       subtitle="Atur Contact Person dan daftar FAQ yang tampil di halaman Bantuan"
       role="Admin"
-      name="Dr. Aminah"
     >
       {/* Tabs */}
       <div className="flex gap-2 mb-5 p-1 rounded-full w-fit" style={{ background: 'var(--surface-sunken)' }}>
@@ -163,7 +162,7 @@ export default function AdminBantuan() {
           <div className="grid gap-4 md:grid-cols-2">
             {/* Telepon */}
             <div>
-              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+              <label className="text-sm font-medium mb-2 flex items-center gap-2">
                 <Phone size={14} style={{ color: 'var(--primary)' }} /> Telepon
               </label>
               <input
@@ -177,7 +176,7 @@ export default function AdminBantuan() {
 
             {/* Email */}
             <div>
-              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+              <label className="text-sm font-medium mb-2 flex items-center gap-2">
                 <Mail size={14} style={{ color: 'var(--primary)' }} /> Email
               </label>
               <input
@@ -191,7 +190,7 @@ export default function AdminBantuan() {
 
             {/* Jam Layanan */}
             <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+              <label className="text-sm font-medium mb-2 flex items-center gap-2">
                 <Clock size={14} style={{ color: 'var(--primary)' }} /> Jam Layanan
               </label>
               <input
