@@ -13,6 +13,7 @@ const artikelRoutes = require("./routes/artikelRoutes");
 const kegiatanRoutes = require("./routes/kegiatanRoutes");
 const bantuanRoutes = require("./routes/bantuanRoutes");
 const adminRoutes = require("./routes/manajemenAdminRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 
 // --- ROUTE MIDDLEWARES ---
 app.use("/api/auth", authRoutes);
@@ -20,6 +21,7 @@ app.use("/api/admin/artikel", artikelRoutes);
 app.use("/api/admin/kegiatan", kegiatanRoutes);
 app.use("/api/admin/bantuan", bantuanRoutes);
 app.use("/api/admin/manajemen-admin", adminRoutes);
+app.use("/api/public", publicRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend UPA-BK berjalan");

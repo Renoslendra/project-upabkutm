@@ -1,4 +1,4 @@
-import {useState,useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import {
   LayoutDashboard,
@@ -37,50 +37,104 @@ export const adminItems = [
   { to: '/admin/bantuan', label: 'Bantuan', Icon: HelpCircle },
 ];
 
-// ---- Dummy data (nanti tinggal ganti saat ada API) ----
-const viewsTrend = [
-  { m: 'Jan', v: 620 },
-  { m: 'Feb', v: 880 },
-  { m: 'Mar', v: 1040 },
-  { m: 'Apr', v: 1250 },
-  { m: 'Mei', v: 1420 },
-  { m: 'Jun', v: 1180 },
-];
-
-const artikelStatus = [
-  { n: 'Published', v: 38 },
-  { n: 'Draft', v: 14 },
-];
-
 const COLORS = ['#6B21A8', '#A855F7'];
-
-const recentArtikel = [
-  { id: 1, title: 'Mengatasi Kecemasan Menjelang Ujian', views: 1250, status: 'Published' },
-  { id: 2, title: 'Pentingnya Self-Care untuk Mahasiswa', views: 980, status: 'Published' },
-  { id: 3, title: 'Mengenali Tanda-Tanda Burnt Out', views: 850, status: 'Draft' },
-];
-
-const upcomingKegiatan = [
-  { id: 1, title: 'Webinar Kesehatan Mental 2026', date: '15 Mei 2026', loc: 'Zoom Meeting', status: 'Akan Datang' },
-  { id: 2, title: 'Pelatihan Peer Counselor', date: '02 Jun 2026', loc: 'Gedung Rektorat Lt.4', status: 'Akan Datang' },
-  { id: 3, title: 'Sosialisasi Anti-Bullying', date: '10 Apr 2026', loc: 'Auditorium UTM', status: 'Selesai' },
-];
-
-const kpis = [
-  { l: 'Total Artikel', v: '52', delta: '+4 bulan ini', cls: 'badge-info', Icon: BookOpen },
-  { l: 'Artikel Published', v: '38', delta: '+12%', cls: 'badge-success', Icon: CheckCircle2 },
-  { l: 'Total Kegiatan', v: '14', delta: '+2 bulan ini', cls: 'badge-info', Icon: Sparkles },
-  { l: 'Akan Datang', v: '5', delta: 'Mei–Jun', cls: 'badge-warning', Icon: CalendarDays },
-];
 
 export default function AdminDashboard() {
   const [adminName, setAdminName] = useState("Admin");
+  
+  // State untuk Tabel Terbaru
+  const [recentArtikel, setRecentArtikel] = useState<any[]>([]);
+  const [upcomingKegiatan, setUpcomingKegiatan] = useState<any[]>([]);
+  
+  // State untuk Grafik dan KPI
+  const [kpiData, setKpiData] = useState({ totalArt: 0, pubArt: 0, totalKeg: 0, akanDatang: 0 });
+  const [pieData, setPieData] = useState<any[]>([]);
+  const [barData, setBarData] = useState<any[]>([]);
+  
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const storedName = localStorage.getItem("adminName");
-    if (storedName) {
-      setAdminName(storedName);
-    }
+    if (storedName) setAdminName(storedName);
+
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Ambil data dalam jumlah besar (limit 1000) untuk dikalkulasi oleh React
+        const resArtikel = await fetch('http://localhost:5000/api/admin/artikel?limit=1000', { headers });
+        const dataArtikel = await resArtikel.json();
+        
+        const resKegiatan = await fetch('http://localhost:5000/api/admin/kegiatan?limit=1000', { headers });
+        const dataKegiatan = await resKegiatan.json();
+
+        if (dataArtikel.success && dataKegiatan.success) {
+          const allArt = dataArtikel.data;
+          const allKeg = dataKegiatan.data;
+
+          // 1. DATA TABEL TERBARU (Ambil 3 Teratas)
+          setRecentArtikel(allArt.slice(0, 3));
+          setUpcomingKegiatan(allKeg.slice(0, 3));
+
+          // 2. KALKULASI DATA KPI (4 Kotak Angka)
+          const pubArt = allArt.filter((a: any) => a.status === 'Published').length;
+          const draftArt = allArt.length - pubArt;
+          const akanDatang = allKeg.filter((k: any) => k.status === 'Akan Datang').length;
+
+          setKpiData({
+            totalArt: allArt.length,
+            pubArt: pubArt,
+            totalKeg: allKeg.length,
+            akanDatang: akanDatang
+          });
+
+          // 3. DATA PIE CHART (Status Artikel)
+          setPieData([
+            { n: 'Published', v: pubArt },
+            { n: 'Draft', v: draftArt }
+          ]);
+
+          // 4. DATA BAR CHART (Views 6 Bulan Terakhir)
+          const months = [];
+          const today = new Date();
+          // Buat array 6 bulan terakhir ke belakang
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            months.push(d.toLocaleString('id-ID', { month: 'short' }));
+          }
+          
+          const trend = months.map(m => ({ m, v: 0 }));
+          
+          // Masukkan data view dari setiap artikel ke bulan yang sesuai
+          allArt.forEach((a: any) => {
+            const d = a.created_at ? new Date(a.created_at) : new Date();
+            const mName = d.toLocaleString('id-ID', { month: 'short' });
+            const target = trend.find(t => t.m === mName);
+            if (target) {
+              target.v += (a.views || 0); // Tambahkan view artikel ke bulan tersebut
+            }
+          });
+          
+          setBarData(trend);
+        }
+      } catch (error) {
+        console.error("Gagal memuat data dashboard:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
+
+  // Variabel untuk merender 4 kotak KPI secara dinamis
+  const kpisDynamic = [
+    { l: 'Total Artikel', v: kpiData.totalArt, delta: 'Semua waktu', cls: 'badge-info', Icon: BookOpen },
+    { l: 'Artikel Published', v: kpiData.pubArt, delta: 'Live', cls: 'badge-success', Icon: CheckCircle2 },
+    { l: 'Total Kegiatan', v: kpiData.totalKeg, delta: 'Semua agenda', cls: 'badge-info', Icon: Sparkles },
+    { l: 'Akan Datang', v: kpiData.akanDatang, delta: 'Segera', cls: 'badge-warning', Icon: CalendarDays },
+  ];
 
   return (
     <DashboardLayout
@@ -102,7 +156,7 @@ export default function AdminDashboard() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {kpis.map((s) => (
+        {kpisDynamic.map((s) => (
           <div key={s.l} className="card-soft">
             <div className="flex items-center justify-between mb-3">
               <div
@@ -114,7 +168,7 @@ export default function AdminDashboard() {
               <span className={`badge ${s.cls}`}>{s.delta}</span>
             </div>
             <div style={{ fontWeight: 700, fontSize: '1.75rem', color: 'var(--primary-dark)' }}>
-              {s.v}
+              {isLoading ? "-" : s.v}
             </div>
             <div className="eyebrow mt-1">{s.l}</div>
           </div>
@@ -139,7 +193,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={viewsTrend}>
+            <BarChart data={barData}>
               <XAxis dataKey="m" stroke="#9A8D91" />
               <YAxis stroke="#9A8D91" />
               <Tooltip
@@ -168,13 +222,13 @@ export default function AdminDashboard() {
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
-                data={artikelStatus}
+                data={pieData}
                 dataKey="v"
                 innerRadius={50}
                 outerRadius={80}
                 paddingAngle={2}
               >
-                {artikelStatus.map((_, i) => (
+                {pieData.map((_, i) => (
                   <Cell key={i} fill={COLORS[i]} />
                 ))}
               </Pie>
@@ -189,7 +243,7 @@ export default function AdminDashboard() {
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1 mt-2">
-            {artikelStatus.map((d, i) => (
+            {pieData.map((d, i) => (
               <div key={d.n} className="flex justify-between text-xs">
                 <span className="flex items-center gap-2">
                   <span
@@ -208,7 +262,7 @@ export default function AdminDashboard() {
       {/* Two recent tables side by side */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Artikel Terbaru */}
-        <div className="card-soft p-0 overflow-hidden">
+        <div className="card-soft p-0 overflow-hidden flex flex-col h-full">
           <div className="px-6 py-5 flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 style={{ fontSize: '1.1rem' }}>Artikel Terbaru</h3>
@@ -223,7 +277,7 @@ export default function AdminDashboard() {
               Kelola <ArrowUpRight size={14} />
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto flex-1">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: '#F5F3FF' }}>
@@ -239,42 +293,48 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentArtikel.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="border-t hover:bg-[var(--surface-sunken)] transition-colors"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <td className="px-6 py-3 flex items-center gap-2">
-                      <FileText size={14} style={{ color: 'var(--primary)' }} />
-                      <span className="font-medium">{r.title}</span>
-                    </td>
-                    <td
-                      className="px-6 py-3"
-                      style={{ color: 'var(--text-secondary)' }}
+                {isLoading ? (
+                  <tr><td colSpan={3} className="p-4 text-center text-gray-500">Memuat...</td></tr>
+                ) : recentArtikel.length === 0 ? (
+                  <tr><td colSpan={3} className="p-4 text-center text-gray-500">Belum ada artikel</td></tr>
+                ) : (
+                  recentArtikel.map((r) => (
+                    <tr
+                      key={r.id}
+                      className="border-t hover:bg-[var(--surface-sunken)] transition-colors"
+                      style={{ borderColor: 'var(--border)' }}
                     >
-                      <span className="inline-flex items-center gap-1">
-                        <Eye size={13} /> {r.views.toLocaleString('id-ID')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3">
-                      <span
-                        className={`badge ${
-                          r.status === 'Published' ? 'badge-success' : 'badge-neutral'
-                        }`}
+                      <td className="px-6 py-4 flex items-center gap-2">
+                        <FileText size={14} style={{ color: 'var(--primary)' }} />
+                        <span className="font-medium line-clamp-1">{r.judul}</span>
+                      </td>
+                      <td
+                        className="px-6 py-4"
+                        style={{ color: 'var(--text-secondary)' }}
                       >
-                        {r.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                        <span className="inline-flex items-center gap-1">
+                          <Eye size={13} /> {r.views || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`badge ${
+                            r.status === 'Published' ? 'badge-success' : 'badge-neutral'
+                          }`}
+                        >
+                          {r.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
         {/* Kegiatan Terdekat */}
-        <div className="card-soft p-0 overflow-hidden">
+        <div className="card-soft p-0 overflow-hidden flex flex-col h-full">
           <div className="px-6 py-5 flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 style={{ fontSize: '1.1rem' }}>Kegiatan Terdekat</h3>
@@ -289,7 +349,7 @@ export default function AdminDashboard() {
               Kelola <ArrowUpRight size={14} />
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto flex-1">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: '#F5F3FF' }}>
@@ -305,40 +365,47 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {upcomingKegiatan.map((r) => (
-                  <tr
-                    key={r.id}
-                    className="border-t hover:bg-[var(--surface-sunken)] transition-colors"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <td className="px-6 py-3 font-medium">{r.title}</td>
-                    <td
-                      className="px-6 py-3"
-                      style={{ color: 'var(--text-secondary)' }}
+                {isLoading ? (
+                  <tr><td colSpan={4} className="p-4 text-center text-gray-500">Memuat...</td></tr>
+                ) : upcomingKegiatan.length === 0 ? (
+                  <tr><td colSpan={4} className="p-4 text-center text-gray-500">Belum ada kegiatan</td></tr>
+                ) : (
+                  upcomingKegiatan.map((r) => (
+                    <tr
+                      key={r.id}
+                      className="border-t hover:bg-[var(--surface-sunken)] transition-colors"
+                      style={{ borderColor: 'var(--border)' }}
                     >
-                      <span className="inline-flex items-center gap-1">
-                        <CalendarDays size={13} /> {r.date}
-                      </span>
-                    </td>
-                    <td
-                      className="px-6 py-3"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin size={13} /> {r.loc}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3">
-                      <span
-                        className={`badge ${
-                          r.status === 'Akan Datang' ? 'badge-info' : 'badge-neutral'
-                        }`}
+                      <td className="px-6 py-4 font-medium line-clamp-1">{r.nama_kegiatan}</td>
+                      <td
+                        className="px-6 py-4"
+                        style={{ color: 'var(--text-secondary)' }}
                       >
-                        {r.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays size={13} /> 
+                          {new Date(r.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                      </td>
+                      <td
+                        className="px-6 py-4"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin size={13} /> {r.lokasi}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`badge ${
+                            r.status === 'Akan Datang' ? 'badge-info' : 'badge-neutral'
+                          }`}
+                        >
+                          {r.status || 'Akan Datang'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const bantuanController = require("../controllers/bantuanController");
+const artikelController = require("../controllers/artikelController");
 const verifyToken = require("../middleware/authMiddleware");
 
-// Semua route dilindungi JWT
-router.use(verifyToken);
+// Bebas diakses publik (Tanpa Token)
+router.get("/", artikelController.list);
+router.get("/:id", artikelController.getById);
 
-router.get("/", bantuanController.list);
-router.get("/:id", bantuanController.getById);
-router.post("/", bantuanController.create);
-router.put("/:id", bantuanController.update);
-router.delete("/:id", bantuanController.remove);
+// Wajib Login / Akses Admin (Pakai Token)
+router.post("/", verifyToken, artikelController.create);
+router.put("/:id", verifyToken, artikelController.update);
+router.delete("/:id", verifyToken, artikelController.remove);
 
 module.exports = router;

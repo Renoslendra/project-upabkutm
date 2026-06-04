@@ -8,7 +8,7 @@ exports.list = async (req, res) => {
   const offset = (page - 1) * limit;
   try {
     const [rows] = await db.query(
-      "SELECT id, username, nama, email, created_at FROM admin WHERE nama LIKE ? OR username LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+      "SELECT id, username, nama, created_at FROM admin WHERE nama LIKE ? OR username LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
       [q, q, limit, offset]
     );
     const [countRows] = await db.query("SELECT COUNT(*) as total FROM admin WHERE nama LIKE ? OR username LIKE ?", [q, q]);
@@ -22,7 +22,7 @@ exports.list = async (req, res) => {
 exports.getById = async (req, res) => {
   const id = req.params.id;
   try {
-    const [rows] = await db.query("SELECT id, username, nama, email, created_at FROM admin WHERE id = ?", [id]);
+    const [rows] = await db.query("SELECT id, username, nama, created_at FROM admin WHERE id = ?", [id]);
     if (!rows.length) return res.status(404).json({ success: false, message: "Admin tidak ditemukan" });
     res.json({ success: true, data: rows[0] });
   } catch (err) {
@@ -32,7 +32,7 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { username, password, nama, email } = req.body;
+  const { username, password, nama } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, message: "username & password wajib diisi" });
   }
@@ -45,10 +45,10 @@ exports.create = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await db.query(
-      "INSERT INTO admin (username, password, nama, email) VALUES (?, ?, ?, ?)",
-      [username, hashedPassword, nama || null, email || null]
+      "INSERT INTO admin (username, password, nama) VALUES (?, ?, ?)",
+      [username, hashedPassword, nama || null]
     );
-    const [rows] = await db.query("SELECT id, username, nama, email, created_at FROM admin WHERE id = ?", [result.insertId]);
+    const [rows] = await db.query("SELECT id, username, nama, created_at FROM admin WHERE id = ?", [result.insertId]);
     res.status(201).json({ success: true, message: "Admin berhasil dibuat", data: rows[0] });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
@@ -61,14 +61,14 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const id = req.params.id;
-  const { nama, email } = req.body;
+  const { nama } = req.body;
   // Note: tidak bisa update password lewat endpoint ini untuk keamanan
   try {
     await db.query(
-      "UPDATE admin SET nama = ?, email = ? WHERE id = ?",
-      [nama || null, email || null, id]
+      "UPDATE admin SET nama = ? WHERE id = ?",
+      [nama || null, id]
     );
-    const [rows] = await db.query("SELECT id, username, nama, email, created_at FROM admin WHERE id = ?", [id]);
+    const [rows] = await db.query("SELECT id, username, nama, created_at FROM admin WHERE id = ?", [id]);
     res.json({ success: true, message: "Admin berhasil diupdate", data: rows[0] });
   } catch (err) {
     console.error("Error update admin:", err);

@@ -3,34 +3,51 @@ import { Search, ArrowRight, BookOpen, ChevronLeft, ChevronRight } from 'lucide-
 import bgUtm from '../components/image/utm.jpg';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 
+// Daftar filter kategori bisa disesuaikan dengan yang ada di databasemu
 const filters = ['Semua', 'Depresi', 'Kecemasan', 'Stres', 'Self-Care', 'Akademik', 'Tips'];
-const articles = [
-  { id: 1, cat: 'Kecemasan', title: 'Cara Mengelola Kecemasan di Tengah Kesibukan Kuliah', excerpt: 'Strategi praktis untuk menenangkan pikiran saat tugas menumpuk.', date: '24 Apr 2026', img: 'photo-1499209974431-9dddcece7f88', url: 'https://www.alodokter.com/cara-mengatasi-kecemasan' },
-  { id: 2, cat: 'Self-Care', title: '5 Ritual Pagi untuk Menenangkan Pikiran', excerpt: 'Rutinitas sederhana yang bisa Anda mulai dari hari ini.', date: '20 Apr 2026', img: 'photo-1499728603263-13726abce5fd', url: 'https://www.halodoc.com/artikel/self-care-yang-bisa-dilakukan-setiap-hari' },
-  { id: 3, cat: 'Akademik', title: 'Mengatasi Burnout di Akhir Semester', excerpt: 'Tanda burnout dan langkah pemulihan yang efektif.', date: '15 Apr 2026', img: 'photo-1517842645767-c639042777db', url: 'https://www.alodokter.com/mengenal-burnout-dan-cara-mengatasinya' },
-  { id: 4, cat: 'Depresi', title: 'Mengenali Tanda-Tanda Depresi pada Diri Sendiri', excerpt: 'Awareness adalah langkah pertama menuju pemulihan.', date: '10 Apr 2026', img: 'photo-1494790108377-be9c29b29330', url: 'https://www.alodokter.com/depresi' },
-  { id: 5, cat: 'Stres', title: 'Teknik Pernapasan untuk Mengurangi Stres', excerpt: 'Latihan 5 menit yang bisa Anda lakukan kapan saja.', date: '5 Apr 2026', img: 'photo-1506905925346-21bda4d32df4', url: 'https://www.halodoc.com/artikel/teknik-pernapasan-untuk-meredakan-stres' },
-  { id: 6, cat: 'Tips', title: 'Membangun Rutinitas Tidur yang Sehat', excerpt: 'Tidur berkualitas adalah fondasi kesehatan mental.', date: '1 Apr 2026', img: 'photo-1455642305367-5295bdd5e8e1', url: 'https://www.alodokter.com/tips-tidur-nyenyak' },
-];
 
 export default function Artikel() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // 1. STATE UNTUK MENAMPUNG DATA DARI DATABASE
+  const [articles, setArticles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // 2. FETCH DATA DARI API (Tanpa Token karena ini halaman publik)
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:5000/api/public/artikel');
+        const result = await response.json();
+
+        if (result.success) {
+          setArticles(result.data || []);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil artikel:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, []);
+
+  // Fitur Debounce untuk pencarian
   useEffect(() => {
     const id = window.setTimeout(() => setDebouncedQ(q), 300);
     return () => window.clearTimeout(id);
   }, [q]);
 
-  const list = articles.filter((a) => (active === 'Semua' || a.cat === active) && a.title.toLowerCase().includes(debouncedQ.toLowerCase()));
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = window.setTimeout(() => setIsLoading(false), 380);
-    return () => window.clearTimeout(timer);
-  }, [active, debouncedQ]);
+  // 3. FILTERING DATA BERDASARKAN KATEGORI & PENCARIAN
+  const list = articles.filter(
+    (a) =>
+      (active === 'Semua' || a.kategori === active) &&
+      a.judul.toLowerCase().includes(debouncedQ.toLowerCase())
+  );
 
   return (
     <>
@@ -69,7 +86,6 @@ export default function Artikel() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
-              
             </div>
             <div className="flex gap-2 flex-wrap items-center">
               {filters.map((f) => {
@@ -89,8 +105,8 @@ export default function Artikel() {
           </div>
 
           {isLoading ? (
-            <div className="py-12">
-              <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="py-12 flex justify-center">
+              <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : list.length === 0 ? (
             <div className="card-soft p-16 text-center max-w-md mx-auto bg-white/95 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
@@ -98,26 +114,49 @@ export default function Artikel() {
                 <BookOpen size={32} style={{ color: 'var(--primary)' }} />
               </div>
               <h3 className="mb-2">Tidak Ada Hasil</h3>
-              <p className="mb-5">Coba kata kunci atau kategori lain.</p>
+              <p className="mb-5">Belum ada artikel yang sesuai dengan pencarian atau kategori ini.</p>
               <button className="btn-primary" onClick={() => { setActive('Semua'); setQ(''); }}>Lihat Semua Artikel</button>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* 4. TAMPILKAN DATA ASLI DARI DATABASE */}
               {list.map((a) => (
-                <a href={a.url} target="_blank" rel="noopener noreferrer" key={a.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
+                <div key={a.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
                   <div className="aspect-[16/10] overflow-hidden">
-                    <ImageWithFallback src={`https://images.unsplash.com/${a.img}?w=600&q=80`} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {/* Menggunakan image_url dari database, dengan gambar default jika kosong */}
+                    <ImageWithFallback 
+                      src={a.image_url || `https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=600&q=80`} 
+                      alt={a.judul} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
                   </div>
-                  <div className="p-6">
-                    <span className="badge badge-neutral mb-3">{a.cat}</span>
-                    <h3 style={{ fontSize: '1.1rem' }} className="mb-2">{a.title}</h3>
-                    <p className="text-sm mb-3">{a.excerpt}</p>
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: 'var(--text-tertiary)' }}>{a.date}</span>
-                      <span className="inline-flex items-center gap-1" style={{ color: 'var(--primary)' }}>Baca <ArrowRight size={12} /></span>
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex-1">
+                      <span className="badge badge-neutral mb-3">{a.kategori || "Umum"}</span>
+                      <h3 style={{ fontSize: '1.1rem' }} className="mb-2 line-clamp-2">{a.judul}</h3>
+                      <p className="text-sm mb-3 line-clamp-2 text-gray-600">{a.excerpt}</p>
+                    </div>
+                    <div className="flex items-center justify-between text-xs mt-auto pt-4 border-t border-gray-100">
+                      <span style={{ color: 'var(--text-tertiary)' }}>
+                        {new Date(a.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      {(() => {
+                        // Cek apakah data pada kolom 'konten' adalah link URL yang valid
+                        const isUrl = typeof a.konten === 'string' && /^https?:\/\//i.test(a.konten);
+                        if (isUrl) {
+                          return (
+                            <a href={a.konten} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-[var(--primary)] hover:underline">
+                              Baca <ArrowRight size={12} />
+                            </a>
+                          );
+                        }
+
+                        // Jika kolom `konten` bukan URL (atau kosong)
+                        return <span className="inline-flex items-center gap-1 font-medium text-[var(--text-secondary)] opacity-60 cursor-not-allowed">Baca <ArrowRight size={12} /></span>;
+                      })()}
                     </div>
                   </div>
-                </a>
+                </div>
               ))}
             </div>
           )}
@@ -127,7 +166,7 @@ export default function Artikel() {
               <button className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm" style={{ color: 'var(--text-secondary)' }}>
                 <ChevronLeft size={18} />
               </button>
-              {[1, 2, 3].map((p) => (
+              {[1].map((p) => (
                 <button key={p} className={`w-10 h-10 rounded-full text-sm transition-all border ${p === 1 ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white hover:scale-105 shadow-sm'}`} style={{ fontWeight: 500 }}>{p}</button>
               ))}
               <button className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm" style={{ color: 'var(--text-secondary)' }}>

@@ -1,36 +1,33 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { ChevronDown, MessageCircle } from 'lucide-react';
 import bgUtm from '../components/image/utmjaya.webp';
 
-const faqs = [
-  {
-    q: 'Apakah layanan konseling ini gratis untuk mahasiswa?',
-    a: 'Ya, seluruh layanan bimbingan dan konseling di UPA-BK UTM 100% gratis untuk seluruh mahasiswa aktif Universitas Trunojoyo Madura.',
-  },
-  {
-    q: 'Bagaimana cara mendaftar sesi konseling?',
-    a: 'Anda dapat mendaftar melalui menu "Daftar Konseling" di website ini. Anda akan diminta untuk memilih jadwal, mengisi data diri, dan mengisi kuesioner singkat (Asesmen) sebelum sesi dimulai.',
-  },
-  {
-    q: 'Apakah rahasia saya terjamin?',
-    a: 'Tentu saja. UPA-BK UTM memegang teguh asas kerahasiaan sesuai kode etik psikologi. Data dan cerita Anda tidak akan dibagikan kepada pihak mana pun tanpa persetujuan tertulis dari Anda, kecuali dalam kondisi yang membahayakan nyawa.',
-  },
-  {
-    q: 'Berapa lama durasi satu sesi konseling?',
-    a: 'Satu sesi konseling biasanya berlangsung sekitar 45 hingga 60 menit. Konselor akan menyesuaikan durasi berdasarkan kebutuhan dan kondisi Anda saat sesi berlangsung.',
-  },
-  {
-    q: 'Siapa saja konselor yang ada di UPA-BK UTM?',
-    a: 'Konselor kami terdiri dari Psikolog Klinis dan Dosen Bimbingan Konseling yang bersertifikasi dan berpengalaman dalam menangani permasalahan akademik maupun psikologis mahasiswa.',
-  },
-  {
-    q: 'Apakah saya bisa membatalkan jadwal yang sudah dipesan?',
-    a: 'Bisa. Harap hubungi admin kami melalui WhatsApp atau menu pembatalan di akun Anda maksimal 24 jam sebelum jadwal sesi dimulai, agar jadwal tersebut dapat digunakan oleh mahasiswa lain yang membutuhkan.',
-  },
-];
-
 export default function BantuanFaq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFaq = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:5000/api/public/faq');
+        const result = await response.json();
+
+        if (result.success) {
+          setFaqs(result.data || []);
+          setOpenIndex((result.data || []).length > 0 ? 0 : null);
+        }
+      } catch (error) {
+        console.error('Gagal mengambil FAQ:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFaq();
+  }, []);
 
   return (
     <>
@@ -61,42 +58,48 @@ export default function BantuanFaq() {
 
       <section className="section pt-10 md:pt-14">
         <div className="container-x max-w-3xl">
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = openIndex === idx;
-              return (
-                <div key={idx} className="card-soft overflow-hidden transition-all duration-300" style={{ padding: 0 }}>
-                  <button 
-                    className="w-full text-left p-6 flex justify-between items-center gap-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                    onClick={() => setOpenIndex(isOpen ? null : idx)}
-                  >
-                    <span className="font-semibold text-lg" style={{ color: 'var(--primary-dark)' }}>
-                      {faq.q}
-                    </span>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300" 
+          {isLoading ? (
+            <div className="py-12 flex justify-center">
+              <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {faqs.map((faq, idx) => {
+                const isOpen = openIndex === idx;
+                return (
+                  <div key={faq.id} className="card-soft overflow-hidden transition-all duration-300" style={{ padding: 0 }}>
+                    <button 
+                      className="w-full text-left p-6 flex justify-between items-center gap-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                      onClick={() => setOpenIndex(isOpen ? null : idx)}
+                    >
+                      <span className="font-semibold text-lg" style={{ color: 'var(--primary-dark)' }}>
+                        {faq.pertanyaan}
+                      </span>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300" 
+                        style={{ 
+                          background: isOpen ? 'var(--primary-gradient)' : 'var(--surface-input)', 
+                          color: isOpen ? 'white' : 'var(--text-tertiary)',
+                          transform: isOpen ? 'rotate(180deg)' : 'rotate(0)'
+                        }}>
+                        <ChevronDown size={18} />
+                      </div>
+                    </button>
+                    <div 
+                      className="transition-all duration-300 ease-in-out"
                       style={{ 
-                        background: isOpen ? 'var(--primary-gradient)' : 'var(--surface-input)', 
-                        color: isOpen ? 'white' : 'var(--text-tertiary)',
-                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0)'
-                      }}>
-                      <ChevronDown size={18} />
-                    </div>
-                  </button>
-                  <div 
-                    className="transition-all duration-300 ease-in-out"
-                    style={{ 
-                      maxHeight: isOpen ? '500px' : '0', 
-                      opacity: isOpen ? 1 : 0,
-                    }}
-                  >
-                    <div className="p-6 pt-0 text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                      {faq.a}
+                        maxHeight: isOpen ? '500px' : '0', 
+                        opacity: isOpen ? 1 : 0,
+                      }}
+                    >
+                      <div className="p-6 pt-0 text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                        {faq.jawaban}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="mt-16 text-center card-soft p-10" style={{ background: 'var(--surface-sunken)' }}>
             <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-5 shadow-md" style={{ background: 'white' }}>

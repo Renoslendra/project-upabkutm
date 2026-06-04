@@ -3,21 +3,14 @@ import { MapPin, ArrowRight, Search, ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 import bgUtm from '../components/image/gambarutm.webp';
 
-const filters = ['Semua', 'Workshop', 'Seminar', 'Pelatihan', 'Webinar'];
-const events = [
-  { id: 1, type: 'Workshop', title: 'Mindfulness untuk Mahasiswa', date: '28 APR', loc: 'Auditorium UTM', desc: 'Workshop praktis tentang teknik mindfulness sehari-hari.', img: 'photo-1544027993-37dbfe43562a', url: 'https://www.instagram.com/konseling_utm/' },
-  { id: 2, type: 'Seminar', title: 'Mengelola Stres Akademik', date: '02 MEI', loc: 'Online (Zoom)', desc: 'Seminar dari psikolog klinis tentang manajemen stres.', img: 'photo-1559223607-a43c990c692c', url: 'https://www.instagram.com/konseling_utm/' },
-  { id: 3, type: 'Pelatihan', title: 'Public Speaking & Anxiety', date: '10 MEI', loc: 'Gedung Cakra', desc: 'Pelatihan mengatasi kecemasan saat berbicara di depan umum.', img: 'photo-1505373877841-8d25f7d46678', url: 'https://www.instagram.com/konseling_utm/' },
-  { id: 4, type: 'Webinar', title: 'Self-Compassion 101', date: '18 MEI', loc: 'Online (YouTube Live)', desc: 'Diskusi mendalam tentang welas asih pada diri sendiri.', img: 'photo-1523580494863-6f3031224c94', url: 'https://www.instagram.com/konseling_utm/' },
-];
-
-
+const filters = ['Semua', 'Akan Datang', 'Selesai'];
 
 export default function Kegiatan() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [sortOrder, setSortOrder] = useState('Terbaru');
+  const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,14 +18,38 @@ export default function Kegiatan() {
     return () => window.clearTimeout(id);
   }, [q]);
 
-  const filtered = events.filter((e) => (active === 'Semua' || e.type === active) && e.title.toLowerCase().includes(debouncedQ.toLowerCase()));
-  const list = filtered.sort((a, b) => sortOrder === 'Terbaru' ? a.id - b.id : b.id - a.id);
-
   useEffect(() => {
-    setIsLoading(true);
-    const timer = window.setTimeout(() => setIsLoading(false), 450);
-    return () => window.clearTimeout(timer);
-  }, [active, debouncedQ, sortOrder]);
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      try {
+        const url = new URL('http://localhost:5000/api/public/kegiatan');
+        if (active !== 'Semua') {
+          url.searchParams.set('status', active);
+        }
+        if (debouncedQ) {
+          url.searchParams.set('q', debouncedQ);
+        }
+        const response = await fetch(url.toString());
+        const result = await response.json();
+
+        if (result.success) {
+          setEvents(result.data || []);
+        }
+      } catch (error) {
+        console.error('Gagal mengambil kegiatan:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [active, debouncedQ]);
+
+  const list = [...events].sort((a, b) => {
+    const left = new Date(a.created_at || a.tanggal || 0).getTime();
+    const right = new Date(b.created_at || b.tanggal || 0).getTime();
+    return sortOrder === 'Terbaru' ? right - left : left - right;
+  });
 
   return (
     <>
@@ -100,23 +117,23 @@ export default function Kegiatan() {
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {list.map((e) => (
-                <article key={e.title} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
+                <article key={e.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
                   <div className="grid sm:grid-cols-[160px_1fr]">
                     <div className="relative aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
-                      <ImageWithFallback src={`https://images.unsplash.com/${e.img}?w=400&q=80`} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <ImageWithFallback src={e.image_url || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&q=80'} alt={e.nama_kegiatan} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute top-3 right-3 px-3 py-2 rounded-2xl text-center" style={{ background: 'rgba(255,255,255,0.95)', boxShadow: 'var(--shadow-sm)' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{e.date.split(' ')[0]}</div>
-                        <div className="text-xs" style={{ color: 'var(--primary)' }}>{e.date.split(' ')[1]}</div>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{e.tanggal?.split(' ')[0] || '-'}</div>
+                        <div className="text-xs" style={{ color: 'var(--primary)' }}>{e.tanggal?.split(' ')[1] || ''}</div>
                       </div>
                     </div>
                     <div className="p-6 flex flex-col">
-                      <span className="badge badge-neutral mb-3 self-start">{e.type}</span>
-                      <h3 className="mb-2" style={{ fontSize: '1.15rem' }}>{e.title}</h3>
+                      <span className="badge badge-neutral mb-3 self-start">{e.status || 'Akan Datang'}</span>
+                      <h3 className="mb-2" style={{ fontSize: '1.15rem' }}>{e.nama_kegiatan}</h3>
                       <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
-                        <MapPin size={12} /> {e.loc}
+                        <MapPin size={12} /> {e.lokasi}
                       </div>
-                      <p className="text-sm mb-4">{e.desc}</p>
-                      <a href={e.url} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm self-start mt-auto">Lihat Detail <ArrowRight size={14} /></a>
+                      <p className="text-sm mb-4">{e.deskripsi}</p>
+                      <span className="btn-ghost text-sm self-start mt-auto cursor-default">Lihat Detail <ArrowRight size={14} /></span>
                     </div>
                   </div>
                 </article>

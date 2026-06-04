@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { MapPin, Mail, Clock, Phone, ExternalLink, Instagram } from 'lucide-react';
 import { HeroBanner } from '../components/HeroBanner';
 
@@ -48,6 +49,64 @@ const contacts = [
 ];
 
 export default function BantuanCp() {
+  const [contact, setContact] = useState<{ telepon?: string; email?: string; jam_layanan?: string } | null>(null);
+
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/public/kontak');
+        const result = await response.json();
+
+        if (result.success) {
+          setContact(result.data);
+        }
+      } catch (error) {
+        console.error('Gagal mengambil kontak:', error);
+      }
+    };
+
+    fetchContact();
+  }, []);
+
+  const contacts = [
+    {
+      icon: Mail,
+      label: 'Email',
+      value: contact?.email || 'upabk@trunojoyo.ac.id',
+      desc: 'Pertanyaan administratif & layanan',
+      href: `https://mail.google.com/mail/?view=cm&fs=1&to=${contact?.email || 'upabk@trunojoyo.ac.id'}`,
+      action: 'Kirim Email',
+      color: 'var(--primary-light)',
+    },
+    {
+      icon: Phone,
+      label: 'Telepon',
+      value: contact?.telepon || '(031) 3011146',
+      desc: 'Layanan informasi & pendaftaran',
+      href: `tel:${(contact?.telepon || '(031) 3011146').replace(/[^\d+]/g, '')}`,
+      action: 'Hubungi',
+      color: 'var(--primary-light)',
+    },
+    {
+      icon: Clock,
+      label: 'Jam Layanan',
+      value: contact?.jam_layanan || 'Senin - Jumat, 08.00 - 16.00 WIB',
+      desc: 'Waktu layanan operasional',
+      href: '#',
+      action: 'Lihat Jam',
+      color: 'var(--primary-light)',
+    },
+    {
+      icon: Instagram,
+      label: 'Instagram',
+      value: '@konseling_utm',
+      desc: 'Update kegiatan & tips kesehatan mental',
+      href: 'https://www.instagram.com/konseling_utm/',
+      action: 'Follow',
+      color: '#E1306C',
+    },
+  ];
+
   return (
     <>
       <HeroBanner
@@ -109,32 +168,35 @@ export default function BantuanCp() {
             </h2>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {contacts.map((c) => (
-              <a
-                key={c.label}
-                href={c.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="card-soft p-6 group hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer text-center bg-white"
-              >
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
-                  style={{ background: `${c.color}12` }}
+            {contacts.map((c) => {
+              const CardTag = c.href === '#' ? 'div' : 'a';
+              return (
+                <CardTag
+                  key={c.label}
+                  href={c.href === '#' ? undefined : c.href}
+                  target={c.href === '#' ? undefined : '_blank'}
+                  rel={c.href === '#' ? undefined : 'noopener noreferrer'}
+                  className="card-soft p-6 group hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-center bg-white"
                 >
-                  <c.icon size={28} style={{ color: c.color }} />
-                </div>
-                <div className="font-semibold text-base mb-1" style={{ color: 'var(--text-primary)' }}>
-                  {c.value}
-                </div>
-                <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>{c.desc}</p>
-                <span
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all px-4 py-2 rounded-full"
-                  style={{ color: c.color, background: `${c.color}10` }}
-                >
-                  {c.action} <ExternalLink size={13} />
-                </span>
-              </a>
-            ))}
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+                    style={{ background: `${c.color}12` }}
+                  >
+                    <c.icon size={28} style={{ color: c.color }} />
+                  </div>
+                  <div className="font-semibold text-base mb-1" style={{ color: 'var(--text-primary)' }}>
+                    {c.value}
+                  </div>
+                  <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>{c.desc}</p>
+                  <span
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all px-4 py-2 rounded-full"
+                    style={{ color: c.color, background: `${c.color}10` }}
+                  >
+                    {c.action} <ExternalLink size={13} />
+                  </span>
+                </CardTag>
+              );
+            })}
           </div>
         </div>
       </section>

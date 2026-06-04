@@ -276,12 +276,12 @@ export default function Beranda() {
             <Link to="/artikel" className="btn-ghost">Lihat semua <ArrowRight size={16} /></Link>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
+              {[
               { cat: 'Kecemasan', title: 'Cara Mengelola Kecemasan di Tengah Kesibukan Kuliah', date: '24 Apr 2026', img: 'photo-1499209974431-9dddcece7f88' },
               { cat: 'Self-Care', title: '5 Ritual Pagi untuk Menenangkan Pikiran', date: '20 Apr 2026', img: 'photo-1499728603263-13726abce5fd' },
               { cat: 'Akademik', title: 'Mengatasi Burnout di Akhir Semester', date: '15 Apr 2026', img: 'photo-1517842645767-c639042777db' },
-            ].map((a, i) => (
-              <Link to={`/artikel/${i + 1}`} key={a.title} className="card-soft p-0 overflow-hidden group">
+            ].map((a) => (
+              <Link to="/artikel" key={a.title} className="card-soft p-0 overflow-hidden group">
                 <div className="aspect-[16/10] overflow-hidden">
                   <ImageWithFallback
                     src={`https://images.unsplash.com/${a.img}?w=600&q=80`}

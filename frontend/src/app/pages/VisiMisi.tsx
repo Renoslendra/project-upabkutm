@@ -1,7 +1,37 @@
+import { useEffect, useState } from 'react';
 import { Eye, Target, Flag } from 'lucide-react';
 import { HeroBanner } from '../components/HeroBanner';
 
 export default function VisiMisi() {
+  const [visi, setVisi] = useState('');
+  const [misi, setMisi] = useState<string[]>([]);
+  const [tujuan, setTujuan] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVisiMisi = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:5000/api/public/visi-misi');
+        const result = await response.json();
+
+        if (result.success) {
+          const rows = result.data || [];
+          const visiRow = rows.find((item: any) => item.kategori === 'visi');
+          setVisi(visiRow?.konten || '');
+          setMisi(rows.filter((item: any) => item.kategori === 'misi').map((item: any) => item.konten));
+          setTujuan(rows.filter((item: any) => item.kategori === 'tujuan').map((item: any) => item.konten));
+        }
+      } catch (error) {
+        console.error('Gagal mengambil data visi misi:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVisiMisi();
+  }, []);
+
   return (
     <>
       <HeroBanner
@@ -12,64 +42,63 @@ export default function VisiMisi() {
 
       <section className="section">
         <div className="container-x max-w-4xl">
-          {/* Visi */}
-          <div className="card-soft p-8 md:p-10 mb-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-fixed)' }}>
-                <Eye size={20} style={{ color: 'var(--primary-dark)' }} />
-              </div>
-              <h3 className="text-xl font-semibold" style={{ color: 'var(--primary-dark)' }}>Visi</h3>
+          {isLoading ? (
+            <div className="py-12 flex justify-center">
+              <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>
-            <p className="text-base md:text-lg leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-              Menjadi pusat layanan bimbingan dan konseling unggul yang adaptif terhadap kebutuhan mahasiswa, serta mewujudkan ekosistem akademik yang sehat secara psikologis, inklusif, dan berlandaskan empati profesional.
-            </p>
-          </div>
-
-          {/* Misi */}
-          <div className="card-soft p-8 md:p-10 mb-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-fixed)' }}>
-                <Target size={20} style={{ color: 'var(--primary-dark)' }} />
-              </div>
-              <h3 className="text-xl font-semibold" style={{ color: 'var(--primary-dark)' }}>Misi</h3>
-            </div>
-            <div className="space-y-3">
-              {[
-                'Menyediakan layanan konseling individu & kelompok berkualitas.',
-                'Melaksanakan asesmen kesehatan mental berkala.',
-                'Mengedukasi melalui artikel & workshop.',
-                'Berkolaborasi dengan unit kampus untuk lingkungan suportif.',
-              ].map((m, i) => (
-                <div key={i} className="flex gap-4 items-start">
-                  <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold text-white" style={{ background: 'var(--primary)' }}>{i + 1}</span>
-                  <p className="text-base leading-relaxed pt-1" style={{ color: 'var(--text-primary)' }}>{m}</p>
+          ) : (
+            <>
+              <div className="card-soft p-8 md:p-10 mb-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-fixed)' }}>
+                    <Eye size={20} style={{ color: 'var(--primary-dark)' }} />
+                  </div>
+                  <h3 className="text-xl font-semibold" style={{ color: 'var(--primary-dark)' }}>Visi</h3>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tujuan */}
-          <div className="card-soft p-8 md:p-10">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-fixed)' }}>
-                <Flag size={20} style={{ color: 'var(--primary-dark)' }} />
+                <p className="text-base md:text-lg leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                  {visi || 'Data visi belum tersedia.'}
+                </p>
               </div>
-              <h3 className="text-xl font-semibold" style={{ color: 'var(--primary-dark)' }}>Tujuan</h3>
-            </div>
-            <div className="space-y-3">
-              {[
-                'Memberikan layanan konseling yang mudah diakses oleh seluruh civitas akademika UTM.',
-                'Meningkatkan literasi kesehatan mental di lingkungan kampus.',
-                'Mendukung mahasiswa dalam menghadapi tantangan akademik dan personal.',
-                'Menjadi mitra strategis unit-unit kampus dalam menciptakan lingkungan belajar yang sehat.',
-              ].map((t, i) => (
-                <div key={i} className="flex gap-4 items-start">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-2" style={{ background: 'var(--primary)' }} />
-                  <p className="text-base leading-relaxed" style={{ color: 'var(--text-primary)' }}>{t}</p>
+
+              <div className="card-soft p-8 md:p-10 mb-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-fixed)' }}>
+                    <Target size={20} style={{ color: 'var(--primary-dark)' }} />
+                  </div>
+                  <h3 className="text-xl font-semibold" style={{ color: 'var(--primary-dark)' }}>Misi</h3>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="space-y-3">
+                  {misi.length > 0 ? misi.map((item, i) => (
+                    <div key={i} className="flex gap-4 items-start">
+                      <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm font-bold text-white" style={{ background: 'var(--primary)' }}>{i + 1}</span>
+                      <p className="text-base leading-relaxed pt-1" style={{ color: 'var(--text-primary)' }}>{item}</p>
+                    </div>
+                  )) : (
+                    <p style={{ color: 'var(--text-secondary)' }}>Data misi belum tersedia.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="card-soft p-8 md:p-10">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-fixed)' }}>
+                    <Flag size={20} style={{ color: 'var(--primary-dark)' }} />
+                  </div>
+                  <h3 className="text-xl font-semibold" style={{ color: 'var(--primary-dark)' }}>Tujuan</h3>
+                </div>
+                <div className="space-y-3">
+                  {tujuan.length > 0 ? tujuan.map((item, i) => (
+                    <div key={i} className="flex gap-4 items-start">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-2" style={{ background: 'var(--primary)' }} />
+                      <p className="text-base leading-relaxed" style={{ color: 'var(--text-primary)' }}>{item}</p>
+                    </div>
+                  )) : (
+                    <p style={{ color: 'var(--text-secondary)' }}>Data tujuan belum tersedia.</p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </section>
     </>

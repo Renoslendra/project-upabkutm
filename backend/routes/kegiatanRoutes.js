@@ -3,13 +3,13 @@ const router = express.Router();
 const kegiatanController = require("../controllers/kegiatanController");
 const verifyToken = require("../middleware/authMiddleware");
 
-// Semua route dilindungi JWT
-router.use(verifyToken);
-
+// Bebas diakses publik (Tanpa Token)
 router.get("/", kegiatanController.list);
 router.get("/:id", kegiatanController.getById);
-router.post("/", kegiatanController.create);
-router.put("/:id", kegiatanController.update);
-router.delete("/:id", kegiatanController.remove);
+
+// Wajib Login / Akses Admin (Pakai Token)
+router.post("/", verifyToken, kegiatanController.create);
+router.put("/:id", verifyToken, kegiatanController.update);
+router.delete("/:id", verifyToken, kegiatanController.remove);
 
 module.exports = router;
