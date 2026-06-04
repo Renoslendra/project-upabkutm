@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes");
 const artikelRoutes = require("./routes/artikelRoutes");
 const kegiatanRoutes = require("./routes/kegiatanRoutes");
 const bantuanRoutes = require("./routes/bantuanRoutes");
+const statistikRoutes = require("./routes/statistikRoutes");
 const adminRoutes = require("./routes/manajemenAdminRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 
@@ -20,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin/artikel", artikelRoutes);
 app.use("/api/admin/kegiatan", kegiatanRoutes);
 app.use("/api/admin/bantuan", bantuanRoutes);
+app.use("/api/admin/statistik", statistikRoutes);
 app.use("/api/admin/manajemen-admin", adminRoutes);
 app.use("/api/public", publicRoutes);
 

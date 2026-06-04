@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Search } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { adminItems } from './AdminDashboard';
+
+const API_BASE_URL = 'http://localhost:5000/api/admin/statistik';
 
 type ProdiRow = {
   id: number;
@@ -10,13 +12,6 @@ type ProdiRow = {
   konseling: number;
   selesai: number;
 };
-
-const initialData: ProdiRow[] = [
-  { id: 1, prodi: 'Psikologi', total: 124, konseling: 84, selesai: 70 },
-  { id: 2, prodi: 'Teknik Informatika', total: 98, konseling: 57, selesai: 48 },
-  { id: 3, prodi: 'Manajemen', total: 76, konseling: 35, selesai: 28 },
-  { id: 4, prodi: 'Akuntansi', total: 63, konseling: 29, selesai: 22 },
-];
 
 const blankRow = (): ProdiRow => ({
   id: Date.now(),
@@ -27,10 +22,40 @@ const blankRow = (): ProdiRow => ({
 });
 
 export default function AdminStatistik() {
-  const [data, setData] = useState<ProdiRow[]>(initialData);
+  const [data, setData] = useState<ProdiRow[]>([]);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<ProdiRow | null>(null);
   const [isNew, setIsNew] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+  // Load data on mount
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const getToken = () => {
+    return localStorage.getItem('token');
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(API_BASE_URL);
+      if (!response.ok) throw new Error('Gagal memuat data');
+      const result = await response.json();
+      setData(result.data || []);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Terjadi kesalahan';
+      setError(message);
+      console.error('Error fetching statistik:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = useMemo(
     () =>
@@ -67,20 +92,88 @@ export default function AdminStatistik() {
     setIsNew(false);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!editing) return;
-    if (!editing.prodi.trim()) return;
-    if (isNew) {
-      setData((prev) => [{ ...editing, id: Date.now() }, ...prev]);
-    } else {
-      setData((prev) => prev.map((r) => (r.id === editing.id ? editing : r)));
+    if (!editing.prodi.trim()) {
+      setError('Nama program studi tidak boleh kosong');
+      return;
     }
-    cancel();
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      const token = getToken();
+      const method = isNew ? 'POST' : 'PUT';
+      const url = isNew ? API_BASE_URL : `${API_BASE_URL}/${editing.id}`;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          prodi: editing.prodi.trim(),
+          total: editing.total,
+          konseling: editing.konseling,
+          selesai: editing.selesai,
+        }),
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || 'Gagal menyimpan data');
+      }
+
+      const result = await response.json();
+      
+      if (isNew) {
+        setData((prev) => [result.data, ...prev]);
+      } else {
+        setData((prev) =>
+          prev.map((r) => (r.id === editing.id ? result.data : r))
+        );
+      }
+
+      cancel();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Terjadi kesalahan';
+      setError(message);
+      console.error('Error saving statistik:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const remove = (id: number) => {
-    setData((prev) => prev.filter((r) => r.id !== id));
-    if (editing?.id === id) cancel();
+  const remove = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+
+    try {
+      setIsDeleting(id);
+      setError(null);
+      const token = getToken();
+
+      const response = await fetch(`${API_BASE_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || 'Gagal menghapus data');
+      }
+
+      setData((prev) => prev.filter((r) => r.id !== id));
+      if (editing?.id === id) cancel();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Terjadi kesalahan';
+      setError(message);
+      console.error('Error deleting statistik:', err);
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   return (
@@ -91,6 +184,20 @@ export default function AdminStatistik() {
       role="Admin"
       name="Dr. Aminah"
     >
+      {/* Error message */}
+      {error && (
+        <div className="card-soft border border-red-300 bg-red-50 p-4 mb-5">
+          <p className="text-red-700 text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Loading state */}
+      {loading ? (
+        <div className="card-soft p-10 text-center">
+          <p className="text-[var(--text-secondary)]">Memuat data...</p>
+        </div>
+      ) : (
+        <>
       {/* Ringkasan angka */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {[
@@ -122,7 +229,7 @@ export default function AdminStatistik() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="btn-primary inline-flex items-center gap-2 justify-center" onClick={startAdd}>
+        <button className="btn-primary inline-flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed" onClick={startAdd} disabled={isSaving || isDeleting !== null}>
           <Plus size={16} /> Tambah Prodi
         </button>
       </div>
@@ -168,10 +275,14 @@ export default function AdminStatistik() {
             ))}
           </div>
           <div className="mt-5 flex gap-3">
-            <button className="btn-primary inline-flex items-center gap-2" onClick={save}>
-              <Save size={16} /> Simpan
+            <button 
+              className="btn-primary inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+              onClick={save}
+              disabled={isSaving}
+            >
+              <Save size={16} /> {isSaving ? 'Menyimpan...' : 'Simpan'}
             </button>
-            <button className="btn-ghost" onClick={cancel}>
+            <button className="btn-ghost" onClick={cancel} disabled={isSaving}>
               Batal
             </button>
           </div>
@@ -200,16 +311,18 @@ export default function AdminStatistik() {
                   <td className="px-6 py-4 text-[var(--text-secondary)]">{row.selesai}</td>
                   <td className="px-6 py-4 flex justify-center gap-2">
                     <button
-                      className="p-2 btn-ghost rounded text-blue-600"
+                      className="p-2 btn-ghost rounded text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => startEdit(row)}
                       title="Edit"
+                      disabled={isDeleting !== null || isSaving}
                     >
                       <Edit size={16} />
                     </button>
                     <button
-                      className="p-2 btn-ghost rounded text-red-600"
+                      className="p-2 btn-ghost rounded text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => remove(row.id)}
                       title="Hapus"
+                      disabled={isDeleting === row.id || isSaving}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -227,6 +340,8 @@ export default function AdminStatistik() {
           </table>
         </div>
       </div>
+        </>
+      )}
     </DashboardLayout>
   );
 }
