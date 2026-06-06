@@ -17,15 +17,69 @@ const heroSlides = [
   { src: heroImg5, alt: 'Gerbang UTM' },
 ];
 
+type ArtikelBeranda = {
+  id: number;
+  judul: string;
+  kategori?: string;
+  excerpt?: string;
+  image_url?: string;
+  created_at?: string;
+};
+
+type ProfilOrang = {
+  nama?: string;
+  spesialisasi?: string;
+  foto_url?: string;
+};
+
 export default function Beranda() {
   const [slide, setSlide] = useState(0);
   const [overlayOpacity, setOverlayOpacity] = useState(0);
+  const [articles, setArticles] = useState<ArtikelBeranda[]>([]);
+  const [kepala, setKepala] = useState<ProfilOrang | null>(null);
+  const [loadingContent, setLoadingContent] = useState(true);
 
   useEffect(() => {
     const id = setInterval(() => {
       setSlide((p) => (p + 1) % heroSlides.length);
     }, 6000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      setLoadingContent(true);
+      try {
+        const [artikelRes, strukturRes] = await Promise.all([
+          fetch('http://localhost:5000/api/public/artikel?limit=3'),
+          fetch('http://localhost:5000/api/public/struktur-organisasi'),
+        ]);
+
+        const artikelData = await artikelRes.json();
+        const strukturData = await strukturRes.json();
+
+        if (artikelData.success) {
+          setArticles(Array.isArray(artikelData.data) ? artikelData.data.slice(0, 3) : []);
+        }
+
+        if (strukturData.success) {
+          const kepalaData = (strukturData.data || []).find((item: any) => item.kategori === 'kepala');
+          if (kepalaData) {
+            setKepala({
+              nama: kepalaData.nama,
+              spesialisasi: kepalaData.spesialisasi,
+              foto_url: kepalaData.foto_url,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Gagal mengambil data beranda:', error);
+      } finally {
+        setLoadingContent(false);
+      }
+    };
+
+    fetchContent();
   }, []);
 
   // Overlay ungu muncul perlahan saat scroll — easeOutCubic untuk transisi lebih smooth
@@ -154,8 +208,8 @@ export default function Beranda() {
           <div className="card-soft p-8 md:p-12 grid md:grid-cols-[200px_1fr] gap-8 items-center">
             <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden mx-auto shrink-0" style={{ background: 'var(--primary-fixed)' }}>
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80"
-                alt="Kepala UPA-BK"
+                src={kepala?.foto_url || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&q=80'}
+                alt={kepala?.nama || 'Kepala UPA-BK'}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -165,8 +219,12 @@ export default function Beranda() {
                 "UPA-BK UTM hadir sebagai ruang aman bagi seluruh civitas akademika untuk bercerita, tumbuh, dan pulih. Kami percaya bahwa kesehatan mental adalah fondasi keberhasilan akademik dan kehidupan."
               </blockquote>
               <div>
-                <div className="font-semibold" style={{ color: 'var(--primary-dark)' }}>Dr. Aminah, M.Psi</div>
-                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Kepala UPA-BK Universitas Trunojoyo Madura</div>
+                <div className="font-semibold" style={{ color: 'var(--primary-dark)' }}>
+                  {kepala?.nama || 'Dr. Aminah, M.Psi'}
+                </div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {kepala?.spesialisasi || 'Kepala UPA-BK Universitas Trunojoyo Madura'}
+                </div>
               </div>
               <Link to="/tentang" className="btn-ghost mt-4 inline-flex items-center gap-2">
                 Selengkapnya <ArrowRight size={14} />
@@ -215,7 +273,7 @@ export default function Beranda() {
           <div className="rounded-2xl overflow-hidden shadow-lg aspect-video bg-black">
             <iframe
               className="w-full h-full"
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              src="https://www.youtube.com/embed/ltoCqLXCFA0"
               title="Video Profil UPA-BK UTM"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -275,28 +333,37 @@ export default function Beranda() {
             </div>
             <Link to="/artikel" className="btn-ghost">Lihat semua <ArrowRight size={16} /></Link>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-              {[
-              { cat: 'Kecemasan', title: 'Cara Mengelola Kecemasan di Tengah Kesibukan Kuliah', date: '24 Apr 2026', img: 'photo-1499209974431-9dddcece7f88' },
-              { cat: 'Self-Care', title: '5 Ritual Pagi untuk Menenangkan Pikiran', date: '20 Apr 2026', img: 'photo-1499728603263-13726abce5fd' },
-              { cat: 'Akademik', title: 'Mengatasi Burnout di Akhir Semester', date: '15 Apr 2026', img: 'photo-1517842645767-c639042777db' },
-            ].map((a) => (
-              <Link to="/artikel" key={a.title} className="card-soft p-0 overflow-hidden group">
-                <div className="aspect-[16/10] overflow-hidden">
-                  <ImageWithFallback
-                    src={`https://images.unsplash.com/${a.img}?w=600&q=80`}
-                    alt={a.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-6">
-                  <span className="badge badge-neutral mb-3">{a.cat}</span>
-                  <h3 style={{ fontSize: '1.15rem' }} className="mb-2">{a.title}</h3>
-                  <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{a.date}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {loadingContent ? (
+            <div className="py-12 flex justify-center">
+              <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : articles.length === 0 ? (
+            <div className="card-soft p-10 text-center">
+              <p className="text-[var(--text-secondary)]">Belum ada artikel yang dipublikasikan.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {articles.map((a) => (
+                <Link to="/artikel" key={a.id} className="card-soft p-0 overflow-hidden group">
+                  <div className="aspect-[16/10] overflow-hidden">
+                    <ImageWithFallback
+                      src={a.image_url || 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=600&q=80'}
+                      alt={a.judul}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <span className="badge badge-neutral mb-3">{a.kategori || 'Umum'}</span>
+                    <h3 style={{ fontSize: '1.15rem' }} className="mb-2 line-clamp-2">{a.judul}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">{a.excerpt || 'Baca artikel lengkapnya di halaman artikel.'}</p>
+                    <div className="text-xs mt-3" style={{ color: 'var(--text-tertiary)' }}>
+                      {a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

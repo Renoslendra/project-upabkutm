@@ -24,7 +24,6 @@ app.use(express.json()); // Untuk menerima request berupa JSON
 app.use(express.urlencoded({ extended: true })); // Untuk menerima form-data (seperti upload file)
 
 // 3. Expose Folder Uploads ke Publik
-// Ini WAJIB agar tag <img src="http://localhost:5000/uploads/foto.jpg"> di React bisa jalan
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 4. Daftarkan Semua Routing
@@ -47,5 +46,4 @@ app.use("/api/admin/manajemen", adminRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Folder uploads siap melayani gambar!`);
 });

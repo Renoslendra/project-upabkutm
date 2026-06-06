@@ -83,3 +83,37 @@ exports.remove = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+exports.getKontakAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM kontak ORDER BY updated_at DESC LIMIT 1");
+    res.json({ success: true, data: rows[0] || { telepon: "", email: "", jam_layanan: "" } });
+  } catch (err) {
+    console.error("Error get kontak admin:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.updateKontak = async (req, res) => {
+  const { telepon, email, jam_layanan } = req.body;
+  if (!telepon || !email || !jam_layanan) {
+    return res.status(400).json({ success: false, message: "Semua field kontak wajib diisi" });
+  }
+  try {
+    const [rows] = await db.query("SELECT id FROM kontak LIMIT 1");
+    if (rows.length > 0) {
+      await db.query(
+        "UPDATE kontak SET telepon = ?, email = ?, jam_layanan = ? WHERE id = ?",
+        [telepon, email, jam_layanan, rows[0].id]
+      );
+    } else {
+      await db.query(
+        "INSERT INTO kontak (telepon, email, jam_layanan) VALUES (?, ?, ?)",
+        [telepon, email, jam_layanan]
+      );
+    }
+    res.json({ success: true, message: "Informasi kontak berhasil diperbarui" });
+  } catch (err) {
+    console.error("Error update kontak:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

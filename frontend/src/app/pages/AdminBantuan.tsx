@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Phone, Mail, Clock } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { adminItems } from './AdminDashboard';
@@ -15,45 +15,95 @@ type Faq = {
   a: string;
 };
 
-const initialContact: ContactInfo = {
-  phone: '(031) 3011146',
-  email: 'upabk@trunojoyo.ac.id',
-  jamLayanan: 'Senin–Jumat, 08.00–16.00 WIB',
-};
-
-const initialFaqs: Faq[] = [
-  {
-    id: 1,
-    q: 'Apakah layanan konseling ini gratis untuk mahasiswa?',
-    a: 'Ya, seluruh layanan bimbingan dan konseling di UPA-BK UTM 100% gratis untuk seluruh mahasiswa aktif Universitas Trunojoyo Madura.',
-  },
-  {
-    id: 2,
-    q: 'Bagaimana cara mendaftar sesi konseling?',
-    a: 'Anda dapat mendaftar melalui menu "Daftar Konseling" di website ini. Anda akan diminta untuk memilih jadwal, mengisi data diri, dan mengisi kuesioner singkat (Asesmen) sebelum sesi dimulai.',
-  },
-  {
-    id: 3,
-    q: 'Apakah rahasia saya terjamin?',
-    a: 'Tentu saja. UPA-BK UTM memegang teguh asas kerahasiaan sesuai kode etik psikologi.',
-  },
-];
-
-const blankFaq = (): Faq => ({ id: Date.now(), q: '', a: '' });
-
 type TabKey = 'contact' | 'faq';
 
 export default function AdminBantuan() {
   const [tab, setTab] = useState<TabKey>('contact');
-
-  // Contact
-  const [contact, setContact] = useState<ContactInfo>(initialContact);
-  const [contactDraft, setContactDraft] = useState<ContactInfo>(initialContact);
+  
+  // Contact States
+  const [contact, setContact] = useState<ContactInfo>({ phone: '', email: '', jamLayanan: '' });
+  const [contactDraft, setContactDraft] = useState<ContactInfo>({ phone: '', email: '', jamLayanan: '' });
   const [contactEditing, setContactEditing] = useState(false);
+  
+  // FAQ States
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [faqDraft, setFaqDraft] = useState<Faq | null>(null);
+  const [faqIsNew, setFaqIsNew] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const saveContact = () => {
-    setContact(contactDraft);
-    setContactEditing(false);
+  const token = localStorage.getItem('token');
+  const API_FAQ_URL = 'http://localhost:5000/api/admin/bantuan';
+  const API_KONTAK_URL = 'http://localhost:5000/api/admin/bantuan/kontak';
+
+  // 1. Fetch data dari database saat pertama kali load
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch Kontak
+        const resKontak = await fetch(API_KONTAK_URL, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const resultKontak = await resKontak.json();
+        if (resultKontak.success && resultKontak.data) {
+          const mappedContact = {
+            phone: resultKontak.data.telepon || '',
+            email: resultKontak.data.email || '',
+            jamLayanan: resultKontak.data.jam_layanan || '',
+          };
+          setContact(mappedContact);
+          setContactDraft(mappedContact);
+        }
+
+        // Fetch FAQ
+        const resFaq = await fetch(API_FAQ_URL, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const resultFaq = await resFaq.json();
+        if (resultFaq.success) {
+          const mappedFaqs = resultFaq.data.map((item: any) => ({
+            id: item.id,
+            q: item.pertanyaan,
+            a: item.jawaban,
+          }));
+          setFaqs(mappedFaqs);
+        }
+      } catch (err) {
+        console.error('Error fetching bantuan data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
+  // Contact Actions
+  const saveContact = async () => {
+    try {
+      const res = await fetch(API_KONTAK_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          telepon: contactDraft.phone,
+          email: contactDraft.email,
+          jam_layanan: contactDraft.jamLayanan,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setContact(contactDraft);
+        setContactEditing(false);
+      } else {
+        alert(result.message || 'Gagal menyimpan kontak');
+      }
+    } catch (err) {
+      console.error('Error saving contact:', err);
+      alert('Terjadi kesalahan jaringan');
+    }
   };
 
   const cancelContact = () => {
@@ -61,10 +111,8 @@ export default function AdminBantuan() {
     setContactEditing(false);
   };
 
-  // FAQ
-  const [faqs, setFaqs] = useState<Faq[]>(initialFaqs);
-  const [faqDraft, setFaqDraft] = useState<Faq | null>(null);
-  const [faqIsNew, setFaqIsNew] = useState(false);
+  // FAQ Actions
+  const blankFaq = (): Faq => ({ id: 0, q: '', a: '' });
 
   const startAddFaq = () => {
     setFaqDraft(blankFaq());
@@ -81,19 +129,68 @@ export default function AdminBantuan() {
     setFaqIsNew(false);
   };
 
-  const saveFaq = () => {
-    if (!faqDraft || !faqDraft.q.trim()) return;
-    if (faqIsNew) {
-      setFaqs((prev) => [{ ...faqDraft, id: Date.now() }, ...prev]);
-    } else {
-      setFaqs((prev) => prev.map((f) => (f.id === faqDraft.id ? faqDraft : f)));
+  const saveFaq = async () => {
+    if (!faqDraft || !faqDraft.q.trim() || !faqDraft.a.trim()) {
+      alert('Pertanyaan dan jawaban harus diisi');
+      return;
     }
-    cancelFaq();
+    try {
+      const method = faqIsNew ? 'POST' : 'PUT';
+      const url = faqIsNew ? API_FAQ_URL : `${API_FAQ_URL}/${faqDraft.id}`;
+      
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          pertanyaan: faqDraft.q,
+          jawaban: faqDraft.a,
+        }),
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        const savedFaq = {
+          id: result.data.id || faqDraft.id,
+          q: result.data.pertanyaan || faqDraft.q,
+          a: result.data.jawaban || faqDraft.a,
+        };
+
+        if (faqIsNew) {
+          setFaqs((prev) => [savedFaq, ...prev]);
+        } else {
+          setFaqs((prev) => prev.map((f) => (f.id === savedFaq.id ? savedFaq : f)));
+        }
+        cancelFaq();
+      } else {
+        alert(result.message || 'Gagal menyimpan FAQ');
+      }
+    } catch (err) {
+      console.error('Error saving faq:', err);
+      alert('Terjadi kesalahan jaringan');
+    }
   };
 
-  const removeFaq = (id: number) => {
-    setFaqs((prev) => prev.filter((f) => f.id !== id));
-    if (faqDraft?.id === id) cancelFaq();
+  const removeFaq = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus FAQ ini?')) return;
+    try {
+      const res = await fetch(`${API_FAQ_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json();
+      if (result.success) {
+        setFaqs((prev) => prev.filter((f) => f.id !== id));
+        if (faqDraft?.id === id) cancelFaq();
+      } else {
+        alert(result.message || 'Gagal menghapus FAQ');
+      }
+    } catch (err) {
+      console.error('Error deleting faq:', err);
+      alert('Terjadi kesalahan jaringan');
+    }
   };
 
   return (
@@ -158,7 +255,6 @@ export default function AdminBantuan() {
               </div>
             )}
           </div>
-
           <div className="grid gap-4 md:grid-cols-2">
             {/* Telepon */}
             <div>
@@ -173,7 +269,6 @@ export default function AdminBantuan() {
                 disabled={!contactEditing}
               />
             </div>
-
             {/* Email */}
             <div>
               <label className="text-sm font-medium mb-2 flex items-center gap-2">
@@ -187,7 +282,6 @@ export default function AdminBantuan() {
                 disabled={!contactEditing}
               />
             </div>
-
             {/* Jam Layanan */}
             <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 flex items-center gap-2">
@@ -264,7 +358,11 @@ export default function AdminBantuan() {
           )}
 
           <div className="space-y-3">
-            {faqs.map((f) => (
+            {loading ? (
+              <div className="card-soft p-10 text-center text-[var(--text-secondary)] animate-pulse">
+                Memuat data dari database...
+              </div>
+            ) : faqs.map((f) => (
               <div key={f.id} className="card-soft p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -294,7 +392,8 @@ export default function AdminBantuan() {
                 </div>
               </div>
             ))}
-            {faqs.length === 0 && (
+
+            {!loading && faqs.length === 0 && (
               <div className="card-soft p-10 text-center text-[var(--text-secondary)]">
                 Belum ada FAQ. Tambahkan pertanyaan pertama.
               </div>
