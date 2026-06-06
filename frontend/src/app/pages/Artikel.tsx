@@ -10,21 +10,38 @@ export default function Artikel() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
+  const [page, setPage] = useState(1);
   
   // 1. STATE UNTUK MENAMPUNG DATA DARI DATABASE
   const [articles, setArticles] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const limit = 6;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   // 2. FETCH DATA DARI API (Tanpa Token karena ini halaman publik)
   useEffect(() => {
     const fetchArticles = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/public/artikel');
+        const url = new URL('http://localhost:5000/api/public/artikel');
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('limit', String(limit));
+
+        if (debouncedQ) {
+          url.searchParams.set('q', debouncedQ);
+        }
+
+        if (active !== 'Semua') {
+          url.searchParams.set('kategori', active);
+        }
+
+        const response = await fetch(url.toString());
         const result = await response.json();
 
         if (result.success) {
           setArticles(result.data || []);
+          setTotal(result.total || 0);
         }
       } catch (error) {
         console.error("Gagal mengambil artikel:", error);
@@ -34,7 +51,7 @@ export default function Artikel() {
     };
 
     fetchArticles();
-  }, []);
+  }, [active, debouncedQ, page]);
 
   // Fitur Debounce untuk pencarian
   useEffect(() => {
@@ -42,12 +59,9 @@ export default function Artikel() {
     return () => window.clearTimeout(id);
   }, [q]);
 
-  // 3. FILTERING DATA BERDASARKAN KATEGORI & PENCARIAN
-  const list = articles.filter(
-    (a) =>
-      (active === 'Semua' || a.kategori === active) &&
-      a.judul.toLowerCase().includes(debouncedQ.toLowerCase())
-  );
+  useEffect(() => {
+    setPage(1);
+  }, [active, debouncedQ]);
 
   return (
     <>
@@ -108,7 +122,7 @@ export default function Artikel() {
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>
-          ) : list.length === 0 ? (
+          ) : articles.length === 0 ? (
             <div className="card-soft p-16 text-center max-w-md mx-auto bg-white/95 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
               <div className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: 'var(--surface-hover)' }}>
                 <BookOpen size={32} style={{ color: 'var(--primary)' }} />
@@ -120,7 +134,7 @@ export default function Artikel() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* 4. TAMPILKAN DATA ASLI DARI DATABASE */}
-              {list.map((a) => (
+              {articles.map((a) => (
                 <div key={a.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
                   <div className="aspect-[16/10] overflow-hidden">
                     {/* Menggunakan image_url dari database, dengan gambar default jika kosong */}
@@ -161,15 +175,32 @@ export default function Artikel() {
             </div>
           )}
 
-          {list.length > 0 && (
+          {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-12">
-              <button className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm" style={{ color: 'var(--text-secondary)' }}>
+              <button
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page === 1}
+              >
                 <ChevronLeft size={18} />
               </button>
-              {[1].map((p) => (
-                <button key={p} className={`w-10 h-10 rounded-full text-sm transition-all border ${p === 1 ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white hover:scale-105 shadow-sm'}`} style={{ fontWeight: 500 }}>{p}</button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-10 h-10 rounded-full text-sm transition-all border ${p === page ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white hover:scale-105 shadow-sm'}`}
+                  style={{ fontWeight: 500 }}
+                >
+                  {p}
+                </button>
               ))}
-              <button className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm" style={{ color: 'var(--text-secondary)' }}>
+              <button
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={page === totalPages}
+              >
                 <ChevronRight size={18} />
               </button>
             </div>

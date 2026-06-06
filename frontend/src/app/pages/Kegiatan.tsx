@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapPin, ArrowRight, Search, ChevronDown } from 'lucide-react';
+import { MapPin, ArrowRight, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 import bgUtm from '../components/image/gambarutm.webp';
 
@@ -9,9 +9,13 @@ export default function Kegiatan() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
+  const [page, setPage] = useState(1);
   const [sortOrder, setSortOrder] = useState('Terbaru');
   const [events, setEvents] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const limit = 6;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   useEffect(() => {
     const id = window.setTimeout(() => setDebouncedQ(q), 300);
@@ -19,21 +23,32 @@ export default function Kegiatan() {
   }, [q]);
 
   useEffect(() => {
+    setPage(1);
+  }, [active, debouncedQ, sortOrder]);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
         const url = new URL('http://localhost:5000/api/public/kegiatan');
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('limit', String(limit));
+        url.searchParams.set('order', sortOrder === 'Terlama' ? 'asc' : 'desc');
+
         if (active !== 'Semua') {
           url.searchParams.set('status', active);
         }
+
         if (debouncedQ) {
           url.searchParams.set('q', debouncedQ);
         }
+
         const response = await fetch(url.toString());
         const result = await response.json();
 
         if (result.success) {
           setEvents(result.data || []);
+          setTotal(result.total || 0);
         }
       } catch (error) {
         console.error('Gagal mengambil kegiatan:', error);
@@ -43,13 +58,7 @@ export default function Kegiatan() {
     };
 
     fetchEvents();
-  }, [active, debouncedQ]);
-
-  const list = [...events].sort((a, b) => {
-    const left = new Date(a.created_at || a.tanggal || 0).getTime();
-    const right = new Date(b.created_at || b.tanggal || 0).getTime();
-    return sortOrder === 'Terbaru' ? right - left : left - right;
-  });
+  }, [active, debouncedQ, page, sortOrder]);
 
   return (
     <>
@@ -78,7 +87,6 @@ export default function Kegiatan() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
-
               </div>
               <div className="relative w-full sm:max-w-[160px]">
                 <select
@@ -97,8 +105,14 @@ export default function Kegiatan() {
               {filters.map((f) => {
                 const sel = active === f;
                 return (
-                  <button key={f} onClick={() => setActive(f)} className={`px-4 py-2 rounded-full text-sm transition-all border ${sel ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white shadow-sm'}`}
-                    style={{ fontWeight: 500 }}>{f}</button>
+                  <button
+                    key={f}
+                    onClick={() => setActive(f)}
+                    className={`px-4 py-2 rounded-full text-sm transition-all border ${sel ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white shadow-sm'}`}
+                    style={{ fontWeight: 500 }}
+                  >
+                    {f}
+                  </button>
                 );
               })}
               {active !== 'Semua' && (
@@ -114,9 +128,18 @@ export default function Kegiatan() {
             <div className="py-12">
               <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>
+          ) : events.length === 0 ? (
+            <div className="card-soft p-16 text-center max-w-md mx-auto bg-white/95 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
+              <div className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: 'var(--surface-hover)' }}>
+                <ArrowRight size={32} style={{ color: 'var(--primary)' }} />
+              </div>
+              <h3 className="mb-2">Tidak Ada Hasil</h3>
+              <p className="mb-5">Belum ada kegiatan yang sesuai dengan pencarian atau filter ini.</p>
+              <button className="btn-primary" onClick={() => { setActive('Semua'); setQ(''); setDebouncedQ(''); }}>Lihat Semua Kegiatan</button>
+            </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {list.map((e) => (
+              {events.map((e) => (
                 <article key={e.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
                   <div className="grid sm:grid-cols-[160px_1fr]">
                     <div className="relative aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
@@ -138,6 +161,37 @@ export default function Kegiatan() {
                   </div>
                 </article>
               ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-12">
+              <button
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-10 h-10 rounded-full text-sm transition-all border ${p === page ? 'bg-[var(--primary)] text-white border-transparent shadow-[0_8px_16px_rgba(18,6,50,0.3)]' : 'bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 text-gray-700 hover:bg-white hover:scale-105 shadow-sm'}`}
+                  style={{ fontWeight: 500 }}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm transition-all hover:bg-white bg-white/90 backdrop-blur-xl border-[1.5px] border-white/80 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={page === totalPages}
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
           )}
         </div>

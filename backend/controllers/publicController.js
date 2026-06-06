@@ -4,16 +4,25 @@ exports.listPublishedArtikel = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 12;
   const q = req.query.q ? `%${req.query.q}%` : "%";
+  const kategori = req.query.kategori;
   const offset = (page - 1) * limit;
 
   try {
+    const kategoriClause = kategori && kategori !== 'Semua' ? " AND kategori = ?" : "";
+    const params = kategori && kategori !== 'Semua'
+      ? [q, q, q, kategori, limit, offset]
+      : [q, q, q, limit, offset];
+    const countParams = kategori && kategori !== 'Semua'
+      ? [q, q, q, kategori]
+      : [q, q, q];
+
     const [rows] = await db.query(
-      "SELECT id, judul, kategori, excerpt, konten, image_url, views, status, created_at FROM artikel WHERE status = 'Published' AND (judul LIKE ? OR konten LIKE ? OR kategori LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
-      [q, q, q, limit, offset]
+      `SELECT id, judul, kategori, excerpt, konten, image_url, views, status, created_at FROM artikel WHERE status = 'Published' AND (judul LIKE ? OR konten LIKE ? OR kategori LIKE ?)${kategoriClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      params
     );
     const [countRows] = await db.query(
-      "SELECT COUNT(*) as total FROM artikel WHERE status = 'Published' AND (judul LIKE ? OR konten LIKE ? OR kategori LIKE ?)",
-      [q, q, q]
+      `SELECT COUNT(*) as total FROM artikel WHERE status = 'Published' AND (judul LIKE ? OR konten LIKE ? OR kategori LIKE ?)${kategoriClause}`,
+      countParams
     );
 
     res.json({ success: true, data: rows, total: countRows[0].total });
@@ -48,6 +57,7 @@ exports.listKegiatan = async (req, res) => {
   const limit = parseInt(req.query.limit) || 12;
   const q = req.query.q ? `%${req.query.q}%` : "%";
   const status = req.query.status;
+  const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
   const offset = (page - 1) * limit;
 
   try {
@@ -56,7 +66,7 @@ exports.listKegiatan = async (req, res) => {
     const countParams = status ? [q, q, status] : [q, q];
 
     const [rows] = await db.query(
-      `SELECT id, nama_kegiatan, tanggal, lokasi, deskripsi, image_url, status, created_at FROM kegiatan WHERE (nama_kegiatan LIKE ? OR deskripsi LIKE ?)${statusClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT id, nama_kegiatan, tanggal, lokasi, deskripsi, image_url, status, created_at FROM kegiatan WHERE (nama_kegiatan LIKE ? OR deskripsi LIKE ?)${statusClause} ORDER BY created_at ${order} LIMIT ? OFFSET ?`,
       params
     );
     const [countRows] = await db.query(
