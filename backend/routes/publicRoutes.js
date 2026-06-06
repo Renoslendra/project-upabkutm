@@ -10,5 +10,6 @@ router.get("/kontak", publicController.getKontak);
 router.get("/statistik", publicController.listStatistik);
 router.get("/visi-misi", publicController.listVisiMisi);
 router.get("/struktur-organisasi", publicController.listStruktur);
+router.get("/informasi-universitas", publicController.listInformasiUniversitas);
 
 module.exports = router;

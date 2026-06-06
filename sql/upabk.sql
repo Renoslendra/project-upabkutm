@@ -110,6 +110,23 @@ CREATE TABLE struktur_organisasi (
     INDEX idx_kategori_struktur (kategori)
 );
 
+-- 9. Tabel INFORMASI UNIVERSITAS
+DROP TABLE IF EXISTS informasi_universitas;
+CREATE TABLE informasi_universitas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    judul VARCHAR(255) NOT NULL,
+    deskripsi TEXT NOT NULL,
+    kategori ENUM('Libur Akademik', 'Pengumuman', 'Beasiswa', 'Akademik', 'Lainnya') NOT NULL,
+    link_edaran VARCHAR(255) NULL,
+    status ENUM('Aktif', 'Nonaktif') DEFAULT 'Aktif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_kategori (kategori),
+    INDEX idx_status (status),
+    INDEX idx_created (created_at)
+);
+
 -- Admin (Password: admin123 sudah di-hash bcrypt)
 INSERT INTO admin (username, password, nama) VALUES 
 ('admin', '$2b$10$weaQsLrV/LxcWv7GRt7MF.OjJMmWn3EavtQQD3SgSYEvcrsnPoHdW', 'Admin UPA-BK');
@@ -174,3 +191,11 @@ INSERT INTO struktur_organisasi (kategori, nama, role, spesialisasi, bio, foto_u
 ('staff', 'Ruel, S.Kom., M.A.', 'Konselor', 'Pengembangan Karakter', 'Konselor yang aktif memberikan pelatihan resiliensi, motivasi berprestasi, dan penyelesaian konflik interpersonal antarmahasiswa.', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80'),
 ('staff', 'Prima Prigita, M.Psi., Psikolog', 'Psikolog', 'Keluarga & Relasi', 'Membantu mahasiswa yang menghadapi masalah keluarga (broken home), krisis identitas, dan toxic relationship.', 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80'),
 ('staff', 'Jauhari Faizal, S.Kom.', 'Staf IT & Administrasi', 'Manajemen Data & Sistem', 'Bertanggung jawab dalam pengelolaan jadwal konseling, administrasi sistem UPA-BK, dan memastikan kerahasiaan rekam medis digital.', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80');
+
+-- Informasi Universitas
+INSERT INTO informasi_universitas (judul, deskripsi, kategori, link_edaran, status) VALUES
+('Edaran Libur Semester Gasal 2024/2025', 'Penetapan jadwal libur semester gasal untuk seluruh mahasiswa, dosen, dan tenaga kependidikan Universitas Trunojoyo Madura tahun akademik 2024/2025.', 'Libur Akademik', 'https://example.com/edaran-libur-gasal-2024', 'Aktif'),
+('Pengumuman Beasiswa Penuh Program Pascasarjana', 'Dibuka kesempatan beasiswa penuh untuk mahasiswa berprestasi yang ingin melanjutkan studi ke jenjang S2 di berbagai program studi unggulan UTM.', 'Beasiswa', 'https://example.com/beasiswa-pascasarjana-2024', 'Aktif'),
+('Peraturan Akademik Tahun Akademik 2024/2025', 'Perubahan dan penambahan peraturan akademik yang berlaku untuk semua mahasiswa, dosen, dan akademisi di UTM mulai TA 2024/2025.', 'Akademik', 'https://example.com/peraturan-akademik-2024', 'Aktif'),
+('Penyesuaian Jadwal Perkuliahan Akhir Semester', 'Penjadwalan ulang perkuliahan minggu terakhir sebelum ujian akhir semester untuk optimalisasi waktu belajar mahasiswa.', 'Pengumuman', 'https://example.com/jadwal-perkuliahan-gasal', 'Aktif'),
+('Program Akselerator Skripsi Semester Ini', 'Kesempatan bagi mahasiswa semester akhir untuk mempercepat penyelesaian skripsi dengan dukungan intensif dari pembimbing dan UPA-BK.', 'Akademik', 'https://example.com/akselerator-skripsi', 'Aktif');

@@ -145,3 +145,16 @@ exports.listStruktur = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+exports.listInformasiUniversitas = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT id, judul, deskripsi, kategori, link_edaran, status, created_at, updated_at FROM informasi_universitas WHERE status = 'Aktif' ORDER BY created_at DESC"
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error("Error list public informasi universitas:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

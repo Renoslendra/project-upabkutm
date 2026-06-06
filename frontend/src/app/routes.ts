@@ -18,6 +18,7 @@ import AdminArtikel from './pages/AdminArtikel';
 import AdminKegiatan from './pages/AdminKegiatan';
 import AdminStatistik from './pages/AdminStatistik';
 import AdminBantuan from './pages/AdminBantuan';
+import AdminInformasiUniversitas from './pages/AdminInformasiUniversitas';
 import AdminProfil from './pages/AdminProfil';
 import AdminLogin from './pages/AdminLogin';
 import Evaluasi from './pages/Evaluasi';
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
           { path: 'admin/kegiatan', Component: AdminKegiatan },
           { path: 'admin/statistik', Component: AdminStatistik },
           { path: 'admin/bantuan', Component: AdminBantuan },
+          { path: 'admin/informasi-universitas', Component: AdminInformasiUniversitas },
           { path: 'admin/profil', Component: AdminProfil },
         ],
       },

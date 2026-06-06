@@ -14,6 +14,7 @@ import {
   BarChart3,
   HelpCircle,
   UserCog,
+  Building2,
 } from 'lucide-react';
 import {
   BarChart,
@@ -34,6 +35,7 @@ export const adminItems = [
   { to: '/admin/artikel', label: 'Artikel & Edukasi', Icon: BookOpen },
   { to: '/admin/kegiatan', label: 'Kegiatan', Icon: Sparkles },
   { to: '/admin/statistik', label: 'Statistik', Icon: BarChart3 },
+  { to: '/admin/informasi-universitas', label: 'Informasi Universitas', Icon: Building2 },
   { to: '/admin/bantuan', label: 'Bantuan', Icon: HelpCircle },
 ];
 

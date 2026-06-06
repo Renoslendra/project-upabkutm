@@ -12,6 +12,7 @@ const kegiatanRoutes = require("./routes/kegiatanRoutes");
 const bantuanRoutes = require("./routes/bantuanRoutes");
 const statistikRoutes = require("./routes/statistikRoutes");
 const profilRoutes = require("./routes/profilRoutes");
+const informasiUniversitasRoutes = require("./routes/informasiUniversitasRoutes");
 
 // Jika kamu menggunakan file manajemenAdminRoutes.js untuk kelola admin
 const adminRoutes = require("./routes/manajemenAdminRoutes"); 
@@ -37,7 +38,8 @@ app.use("/api/admin/artikel", artikelRoutes);
 app.use("/api/admin/kegiatan", kegiatanRoutes);
 app.use("/api/admin/bantuan", bantuanRoutes);
 app.use("/api/admin/statistik", statistikRoutes);
-app.use("/api/admin/profil", profilRoutes); 
+app.use("/api/admin/profil", profilRoutes);
+app.use("/api/admin/informasi-universitas", informasiUniversitasRoutes);
 
 // Jika ada rute khusus untuk manajemen admin (tambah/hapus akun admin)
 app.use("/api/admin/manajemen", adminRoutes);
