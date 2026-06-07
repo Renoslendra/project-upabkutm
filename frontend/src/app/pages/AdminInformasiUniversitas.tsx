@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { adminItems } from './AdminDashboard';
@@ -37,7 +38,7 @@ export default function AdminInformasiUniversitas() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:5000/api/admin/informasi-universitas', {
+        const res = await fetch(`${API_BASE_URL}/api/admin/informasi-universitas`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const result = await res.json();
@@ -76,8 +77,8 @@ export default function AdminInformasiUniversitas() {
       setError(null);
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew
-        ? 'http://localhost:5000/api/admin/informasi-universitas'
-        : `http://localhost:5000/api/admin/informasi-universitas/${formData.id}`;
+        ? `${API_BASE_URL}/api/admin/informasi-universitas`
+        : `${API_BASE_URL}/api/admin/informasi-universitas/${formData.id}`;
 
       const res = await fetch(url, {
         method,
@@ -110,7 +111,7 @@ export default function AdminInformasiUniversitas() {
 
     try {
       setError(null);
-      const res = await fetch(`http://localhost:5000/api/admin/informasi-universitas/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/informasi-universitas/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

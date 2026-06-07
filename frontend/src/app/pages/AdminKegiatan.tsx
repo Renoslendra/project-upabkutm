@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { adminItems } from './AdminDashboard';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 type Kegiatan = {
   id: number;
@@ -31,19 +33,30 @@ export default function AdminKegiatan() {
   const [isOpen, setIsOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [formData, setFormData] = useState<Kegiatan>(blankKegiatan());
+  const [error, setError] = useState<string | null>(null);
   const token = localStorage.getItem('token');
 
   // Fetch kegiatan
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/admin/kegiatan', {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(`${API_BASE_URL}/api/admin/kegiatan`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (!res.ok) {
+          throw new Error('Gagal memuat kegiatan.');
+        }
         const result = await res.json();
-        if (result.success) setData(result.data);
+        if (result.success) {
+          setData(result.data || []);
+        } else {
+          throw new Error(result.message || 'Gagal memuat kegiatan.');
+        }
       } catch (err) {
         console.error('Error:', err);
+        setError(err instanceof Error ? err.message : 'Gagal memuat kegiatan.');
       } finally {
         setLoading(false);
       }
@@ -70,8 +83,9 @@ export default function AdminKegiatan() {
     }
 
     try {
+      setError(null);
       const method = isNew ? 'POST' : 'PUT';
-      const url = isNew ? 'http://localhost:5000/api/admin/kegiatan' : `http://localhost:5000/api/admin/kegiatan/${formData.id}`;
+      const url = isNew ? `${API_BASE_URL}/api/admin/kegiatan` : `${API_BASE_URL}/api/admin/kegiatan/${formData.id}`;
 
       const res = await fetch(url, {
         method,
@@ -90,9 +104,12 @@ export default function AdminKegiatan() {
           setData(data.map((item) => (item.id === formData.id ? result.data : item)));
         }
         setIsOpen(false);
+      } else {
+        throw new Error(result.message || 'Gagal menyimpan kegiatan.');
       }
     } catch (err) {
       console.error('Error:', err);
+      setError(err instanceof Error ? err.message : 'Gagal menyimpan kegiatan.');
     }
   };
 
@@ -100,7 +117,8 @@ export default function AdminKegiatan() {
     if (!confirm('Yakin ingin menghapus?')) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/kegiatan/${id}`, {
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/admin/kegiatan/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -108,9 +126,12 @@ export default function AdminKegiatan() {
       const result = await res.json();
       if (result.success) {
         setData(data.filter((item) => item.id !== id));
+      } else {
+        throw new Error(result.message || 'Gagal menghapus kegiatan.');
       }
     } catch (err) {
       console.error('Error:', err);
+      setError(err instanceof Error ? err.message : 'Gagal menghapus kegiatan.');
     }
   };
 
@@ -135,6 +156,8 @@ export default function AdminKegiatan() {
         </button>
       </div>
 
+      {error && <ErrorNotice message={error} className="mb-5" />}
+
       <div className="card-soft p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -148,7 +171,19 @@ export default function AdminKegiatan() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {filtered.map((item) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-[var(--text-secondary)]">
+                    Memuat kegiatan...
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-[var(--text-secondary)]">
+                    Tidak ada kegiatan ditemukan.
+                  </td>
+                </tr>
+              ) : filtered.map((item) => (
                 <tr key={item.id} className="hover:bg-[var(--surface-hover)]">
                   <td className="px-6 py-4 font-medium">{item.nama_kegiatan}</td>
                   <td className="px-6 py-4 text-[var(--text-secondary)]">{item.tanggal}</td>

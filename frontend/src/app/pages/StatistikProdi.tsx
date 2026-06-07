@@ -1,22 +1,33 @@
 import { useEffect, useState } from 'react';
 import { HeroBanner } from '../components/HeroBanner';
+import { API_BASE_URL } from '../../config';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 export default function StatistikProdi() {
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStatistik = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const response = await fetch('http://localhost:5000/api/public/statistik');
+        const response = await fetch(`${API_BASE_URL}/api/public/statistik`);
+        if (!response.ok) {
+          throw new Error('Gagal memuat statistik dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
           setData(result.data || []);
+        } else {
+          throw new Error(result.message || 'Gagal memuat statistik dari server.');
         }
       } catch (error) {
         console.error('Gagal mengambil statistik prodi:', error);
+        setData([]);
+        setError(error instanceof Error ? error.message : 'Gagal memuat statistik dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -35,7 +46,9 @@ export default function StatistikProdi() {
       <section className="section">
         <div className="container-x max-w-5xl">
           <div className="card-soft overflow-x-auto p-6">
-            {isLoading ? (
+            {error ? (
+              <ErrorNotice message={error} />
+            ) : isLoading ? (
               <div className="py-12 flex justify-center">
                 <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
               </div>

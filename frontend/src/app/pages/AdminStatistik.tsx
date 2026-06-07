@@ -2,8 +2,9 @@ import { useMemo, useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Search } from 'lucide-react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { adminItems } from './AdminDashboard';
+import { API_BASE_URL as CONFIG_API_URL } from '../../config';
 
-const API_BASE_URL = 'http://localhost:5000/api/admin/statistik';
+const API_BASE_URL = `${CONFIG_API_URL}/api/admin/statistik`;
 
 type ProdiRow = {
   id: number;
@@ -44,7 +45,12 @@ export default function AdminStatistik() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(API_BASE_URL);
+      const token = getToken();
+      const response = await fetch(API_BASE_URL, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error('Gagal memuat data');
       const result = await response.json();
       setData(result.data || []);

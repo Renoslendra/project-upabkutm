@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Phone, Mail, Clock } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { adminItems } from './AdminDashboard';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 type ContactInfo = {
   phone: string;
@@ -30,20 +32,25 @@ export default function AdminBantuan() {
   const [faqDraft, setFaqDraft] = useState<Faq | null>(null);
   const [faqIsNew, setFaqIsNew] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const token = localStorage.getItem('token');
-  const API_FAQ_URL = 'http://localhost:5000/api/admin/bantuan';
-  const API_KONTAK_URL = 'http://localhost:5000/api/admin/bantuan/kontak';
+  const API_FAQ_URL = `${API_BASE_URL}/api/admin/bantuan`;
+  const API_KONTAK_URL = `${API_BASE_URL}/api/admin/bantuan/kontak`;
 
   // 1. Fetch data dari database saat pertama kali load
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         // Fetch Kontak
         const resKontak = await fetch(API_KONTAK_URL, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (!resKontak.ok) {
+          throw new Error('Gagal memuat data kontak.');
+        }
         const resultKontak = await resKontak.json();
         if (resultKontak.success && resultKontak.data) {
           const mappedContact = {
@@ -59,6 +66,9 @@ export default function AdminBantuan() {
         const resFaq = await fetch(API_FAQ_URL, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (!resFaq.ok) {
+          throw new Error('Gagal memuat FAQ.');
+        }
         const resultFaq = await resFaq.json();
         if (resultFaq.success) {
           const mappedFaqs = resultFaq.data.map((item: any) => ({
@@ -70,6 +80,7 @@ export default function AdminBantuan() {
         }
       } catch (err) {
         console.error('Error fetching bantuan data:', err);
+        setError(err instanceof Error ? err.message : 'Gagal memuat data bantuan.');
       } finally {
         setLoading(false);
       }
@@ -81,6 +92,7 @@ export default function AdminBantuan() {
   // Contact Actions
   const saveContact = async () => {
     try {
+      setError(null);
       const res = await fetch(API_KONTAK_URL, {
         method: 'PUT',
         headers: {
@@ -98,10 +110,12 @@ export default function AdminBantuan() {
         setContact(contactDraft);
         setContactEditing(false);
       } else {
+        setError(result.message || 'Gagal menyimpan kontak');
         alert(result.message || 'Gagal menyimpan kontak');
       }
     } catch (err) {
       console.error('Error saving contact:', err);
+      setError('Terjadi kesalahan jaringan saat menyimpan kontak');
       alert('Terjadi kesalahan jaringan');
     }
   };
@@ -135,6 +149,7 @@ export default function AdminBantuan() {
       return;
     }
     try {
+      setError(null);
       const method = faqIsNew ? 'POST' : 'PUT';
       const url = faqIsNew ? API_FAQ_URL : `${API_FAQ_URL}/${faqDraft.id}`;
       
@@ -165,10 +180,12 @@ export default function AdminBantuan() {
         }
         cancelFaq();
       } else {
+        setError(result.message || 'Gagal menyimpan FAQ');
         alert(result.message || 'Gagal menyimpan FAQ');
       }
     } catch (err) {
       console.error('Error saving faq:', err);
+      setError('Terjadi kesalahan jaringan saat menyimpan FAQ');
       alert('Terjadi kesalahan jaringan');
     }
   };
@@ -176,6 +193,7 @@ export default function AdminBantuan() {
   const removeFaq = async (id: number) => {
     if (!confirm('Apakah Anda yakin ingin menghapus FAQ ini?')) return;
     try {
+      setError(null);
       const res = await fetch(`${API_FAQ_URL}/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
@@ -185,10 +203,12 @@ export default function AdminBantuan() {
         setFaqs((prev) => prev.filter((f) => f.id !== id));
         if (faqDraft?.id === id) cancelFaq();
       } else {
+        setError(result.message || 'Gagal menghapus FAQ');
         alert(result.message || 'Gagal menghapus FAQ');
       }
     } catch (err) {
       console.error('Error deleting faq:', err);
+      setError('Terjadi kesalahan jaringan saat menghapus FAQ');
       alert('Terjadi kesalahan jaringan');
     }
   };
@@ -223,6 +243,8 @@ export default function AdminBantuan() {
           );
         })}
       </div>
+
+      {error && <ErrorNotice message={error} className="mb-5" />}
 
       {/* Contact Person */}
       {tab === 'contact' && (

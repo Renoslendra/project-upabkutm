@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
 // 1. Update Visi Misi & Tujuan
 exports.updateVisiMisi = async (req, res) => {
@@ -33,7 +34,7 @@ exports.updateKepala = async (req, res) => {
   let foto_url = req.body.foto_url_lama || ""; // Ambil foto lama jika tidak upload baru
   
   if (req.file) {
-    foto_url = `http://localhost:5000/uploads/${req.file.filename}`;
+    foto_url = `${BASE_URL}/uploads/${req.file.filename}`;
   }
 
   try {
@@ -53,7 +54,7 @@ exports.updateKepala = async (req, res) => {
 exports.createStaff = async (req, res) => {
   const { nama, role, spesialisasi, bio } = req.body;
   let foto_url = "";
-  if (req.file) foto_url = `http://localhost:5000/uploads/${req.file.filename}`;
+  if (req.file) foto_url = `${BASE_URL}/uploads/${req.file.filename}`;
 
   try {
     const [result] = await db.query("INSERT INTO struktur_organisasi (kategori, nama, role, spesialisasi, bio, foto_url) VALUES ('staff', ?, ?, ?, ?, ?)", 
@@ -65,7 +66,7 @@ exports.createStaff = async (req, res) => {
 exports.updateStaff = async (req, res) => {
   const { nama, role, spesialisasi, bio } = req.body;
   let foto_url = req.body.foto_url_lama || "";
-  if (req.file) foto_url = `http://localhost:5000/uploads/${req.file.filename}`;
+  if (req.file) foto_url = `${BASE_URL}/uploads/${req.file.filename}`;
 
   try {
     await db.query("UPDATE struktur_organisasi SET nama=?, role=?, spesialisasi=?, bio=?, foto_url=? WHERE id=? AND kategori='staff'", 

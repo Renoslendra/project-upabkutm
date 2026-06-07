@@ -1,26 +1,38 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { ChevronDown, MessageCircle } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import bgUtm from '../components/image/utmjaya.webp';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 export default function BantuanFaq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [faqs, setFaqs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFaq = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const response = await fetch('http://localhost:5000/api/public/faq');
+        const response = await fetch(`${API_BASE_URL}/api/public/faq`);
+        if (!response.ok) {
+          throw new Error('Gagal memuat FAQ dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
           setFaqs(result.data || []);
           setOpenIndex((result.data || []).length > 0 ? 0 : null);
+        } else {
+          throw new Error(result.message || 'Gagal memuat FAQ dari server.');
         }
       } catch (error) {
         console.error('Gagal mengambil FAQ:', error);
+        setFaqs([]);
+        setOpenIndex(null);
+        setError(error instanceof Error ? error.message : 'Gagal memuat FAQ dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -58,9 +70,15 @@ export default function BantuanFaq() {
 
       <section className="section pt-10 md:pt-14">
         <div className="container-x max-w-3xl">
-          {isLoading ? (
+          {error ? (
+            <ErrorNotice message={error} className="mb-8" />
+          ) : isLoading ? (
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : faqs.length === 0 ? (
+            <div className="card-soft p-10 text-center" style={{ color: 'var(--text-secondary)' }}>
+              Belum ada FAQ yang tersedia.
             </div>
           ) : (
             <div className="space-y-4">

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Search, ArrowRight, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import bgUtm from '../components/image/utm.jpg';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 // Daftar filter kategori bisa disesuaikan dengan yang ada di databasemu
 const filters = ['Semua', 'Depresi', 'Kecemasan', 'Stres', 'Self-Care', 'Akademik', 'Tips'];
@@ -16,6 +18,7 @@ export default function Artikel() {
   const [articles, setArticles] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const limit = 6;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -23,8 +26,9 @@ export default function Artikel() {
   useEffect(() => {
     const fetchArticles = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const url = new URL('http://localhost:5000/api/public/artikel');
+        const url = new URL(`${API_BASE_URL}/api/public/artikel`);
         url.searchParams.set('page', String(page));
         url.searchParams.set('limit', String(limit));
 
@@ -37,14 +41,22 @@ export default function Artikel() {
         }
 
         const response = await fetch(url.toString());
+        if (!response.ok) {
+          throw new Error('Gagal memuat artikel dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
           setArticles(result.data || []);
           setTotal(result.total || 0);
+        } else {
+          throw new Error(result.message || 'Gagal memuat artikel dari server.');
         }
       } catch (error) {
         console.error("Gagal mengambil artikel:", error);
+        setArticles([]);
+        setTotal(0);
+        setError(error instanceof Error ? error.message : 'Gagal memuat artikel dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -118,7 +130,9 @@ export default function Artikel() {
             </div>
           </div>
 
-          {isLoading ? (
+          {error ? (
+            <ErrorNotice message={error} className="mb-8" />
+          ) : isLoading ? (
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>

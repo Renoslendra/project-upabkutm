@@ -1,23 +1,34 @@
 import { useEffect, useState } from 'react';
 import { HeroBanner } from '../components/HeroBanner';
+import { API_BASE_URL } from '../../config';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 export default function StrukturOrganisasi() {
   const [staff, setStaff] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStruktur = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const response = await fetch('http://localhost:5000/api/public/struktur-organisasi');
+        const response = await fetch(`${API_BASE_URL}/api/public/struktur-organisasi`);
+        if (!response.ok) {
+          throw new Error('Gagal memuat struktur organisasi dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
           setStaff(result.data || []);
+        } else {
+          throw new Error(result.message || 'Gagal memuat struktur organisasi dari server.');
         }
       } catch (error) {
         console.error('Gagal mengambil struktur organisasi:', error);
+        setStaff([]);
+        setError(error instanceof Error ? error.message : 'Gagal memuat struktur organisasi dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -39,7 +50,9 @@ export default function StrukturOrganisasi() {
 
       <section className="section">
         <div className="container-x max-w-5xl">
-          {isLoading ? (
+          {error ? (
+            <ErrorNotice message={error} className="mb-8" />
+          ) : isLoading ? (
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>

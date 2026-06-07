@@ -1,3 +1,4 @@
+require("dotenv").config({ quiet: true });
 const mysql = require("mysql2/promise");
 
 const db = mysql.createPool({

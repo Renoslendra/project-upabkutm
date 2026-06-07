@@ -29,6 +29,8 @@ import {
   Tooltip,
 } from 'recharts';
 import { DashboardLayout } from '../components/DashboardLayout';
+import { API_BASE_URL } from '../../config';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 export const adminItems = [
   { to: '/admin', label: 'Dashboard', Icon: LayoutDashboard },
@@ -56,6 +58,7 @@ export default function AdminDashboard() {
   const [barData, setBarData] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const storedName = localStorage.getItem("adminName");
@@ -63,14 +66,21 @@ export default function AdminDashboard() {
 
     const fetchDashboardData = async () => {
       try {
+        setError(null);
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
 
         // Ambil data dalam jumlah besar (limit 1000) untuk dikalkulasi oleh React
-        const resArtikel = await fetch('http://localhost:5000/api/admin/artikel?limit=1000', { headers });
+        const resArtikel = await fetch(`${API_BASE_URL}/api/admin/artikel?limit=1000`, { headers });
+        if (!resArtikel.ok) {
+          throw new Error('Gagal memuat data artikel dashboard.');
+        }
         const dataArtikel = await resArtikel.json();
         
-        const resKegiatan = await fetch('http://localhost:5000/api/admin/kegiatan?limit=1000', { headers });
+        const resKegiatan = await fetch(`${API_BASE_URL}/api/admin/kegiatan?limit=1000`, { headers });
+        if (!resKegiatan.ok) {
+          throw new Error('Gagal memuat data kegiatan dashboard.');
+        }
         const dataKegiatan = await resKegiatan.json();
 
         if (dataArtikel.success && dataKegiatan.success) {
@@ -121,9 +131,12 @@ export default function AdminDashboard() {
           });
           
           setBarData(trend);
+        } else {
+          throw new Error('Gagal memuat data dashboard.');
         }
       } catch (error) {
         console.error("Gagal memuat data dashboard:", error);
+        setError(error instanceof Error ? error.message : 'Gagal memuat data dashboard.');
       } finally {
         setIsLoading(false);
       }
@@ -157,6 +170,8 @@ export default function AdminDashboard() {
           <Plus size={16} /> Tambah Kegiatan
         </Link>
       </div>
+
+      {error && <ErrorNotice message={error} className="mb-8" />}
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

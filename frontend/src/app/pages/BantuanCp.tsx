@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { MapPin, Mail, Clock, Phone, ExternalLink, Instagram } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { HeroBanner } from '../components/HeroBanner';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 const WhatsappIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -50,18 +52,26 @@ const contacts = [
 
 export default function BantuanCp() {
   const [contact, setContact] = useState<{ telepon?: string; email?: string; jam_layanan?: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchContact = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/public/kontak');
+        setError(null);
+        const response = await fetch(`${API_BASE_URL}/api/public/kontak`);
+        if (!response.ok) {
+          throw new Error('Gagal memuat kontak dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
           setContact(result.data);
+        } else {
+          throw new Error(result.message || 'Gagal memuat kontak dari server.');
         }
       } catch (error) {
         console.error('Gagal mengambil kontak:', error);
+        setError(error instanceof Error ? error.message : 'Gagal memuat kontak dari server.');
       }
     };
 
@@ -167,6 +177,7 @@ export default function BantuanCp() {
               Cara Menghubungi UPA-BK
             </h2>
           </div>
+          {error && <ErrorNotice message={error} className="mb-8" />}
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {contacts.map((c) => {
               const CardTag = c.href === '#' ? 'div' : 'a';

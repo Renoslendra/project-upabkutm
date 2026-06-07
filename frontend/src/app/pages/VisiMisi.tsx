@@ -1,18 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Eye, Target, Flag } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { HeroBanner } from '../components/HeroBanner';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 export default function VisiMisi() {
   const [visi, setVisi] = useState('');
   const [misi, setMisi] = useState<string[]>([]);
   const [tujuan, setTujuan] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVisiMisi = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const response = await fetch('http://localhost:5000/api/public/visi-misi');
+        const response = await fetch(`${API_BASE_URL}/api/public/visi-misi`);
+        if (!response.ok) {
+          throw new Error('Gagal memuat visi misi dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
@@ -21,9 +28,12 @@ export default function VisiMisi() {
           setVisi(visiRow?.konten || '');
           setMisi(rows.filter((item: any) => item.kategori === 'misi').map((item: any) => item.konten));
           setTujuan(rows.filter((item: any) => item.kategori === 'tujuan').map((item: any) => item.konten));
+        } else {
+          throw new Error(result.message || 'Gagal memuat visi misi dari server.');
         }
       } catch (error) {
         console.error('Gagal mengambil data visi misi:', error);
+        setError(error instanceof Error ? error.message : 'Gagal memuat visi misi dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -42,7 +52,9 @@ export default function VisiMisi() {
 
       <section className="section">
         <div className="container-x max-w-4xl">
-          {isLoading ? (
+          {error ? (
+            <ErrorNotice message={error} className="mb-8" />
+          ) : isLoading ? (
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>

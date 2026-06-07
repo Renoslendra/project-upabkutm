@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Edit, Trash2, Save, X, Image as ImageIcon } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { adminItems } from './AdminDashboard';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 type Pimpinan = {
   id: number;
@@ -21,6 +23,7 @@ export default function AdminPimpinan() {
   // Form States
   const [formData, setFormData] = useState<Partial<Pimpinan>>({});
   const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const token = localStorage.getItem('token');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,13 +31,22 @@ export default function AdminPimpinan() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/pimpinan', {
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/pimpinan`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!res.ok) {
+        throw new Error('Gagal memuat data pimpinan.');
+      }
       const result = await res.json();
-      if (result.success) setData(result.data);
+      if (result.success) {
+        setData(result.data || []);
+      } else {
+        throw new Error(result.message || 'Gagal memuat data pimpinan.');
+      }
     } catch (err) {
       console.error('Error fetching:', err);
+      setError(err instanceof Error ? err.message : 'Gagal memuat data pimpinan.');
     } finally {
       setLoading(false);
     }
@@ -67,9 +79,10 @@ export default function AdminPimpinan() {
     if (!isNew && formData.foto_url) payload.append('foto_url_lama', formData.foto_url);
 
     try {
+      setError(null);
       const url = isNew 
-        ? 'http://localhost:5000/api/pimpinan' 
-        : `http://localhost:5000/api/pimpinan/${formData.id}`;
+        ? `${API_BASE_URL}/api/pimpinan` 
+        : `${API_BASE_URL}/api/pimpinan/${formData.id}`;
         
       const res = await fetch(url, {
         method: isNew ? 'POST' : 'PUT',
@@ -81,8 +94,12 @@ export default function AdminPimpinan() {
       if (result.success) {
         setIsOpen(false);
         fetchData();
-      } else alert(result.message);
+      } else {
+        setError(result.message || 'Gagal menyimpan data pimpinan.');
+        alert(result.message || 'Gagal menyimpan data pimpinan.');
+      }
     } catch (err) {
+      setError('Terjadi kesalahan jaringan saat menyimpan data pimpinan.');
       alert('Terjadi kesalahan jaringan');
     }
   };
@@ -90,12 +107,20 @@ export default function AdminPimpinan() {
   const handleDelete = async (id: number) => {
     if (!confirm('Hapus data pimpinan ini?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/pimpinan/${id}`, {
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/pimpinan/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) fetchData();
-    } catch (err) {}
+      const result = await res.json();
+      if (res.ok && result.success) {
+        fetchData();
+      } else {
+        throw new Error(result.message || 'Gagal menghapus data pimpinan.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menghapus data pimpinan.');
+    }
   };
 
   return (
@@ -106,6 +131,8 @@ export default function AdminPimpinan() {
           <Plus size={16} /> Tambah Data
         </button>
       </div>
+
+      {error && <ErrorNotice message={error} className="mb-5" />}
 
       {loading ? <div className="card-soft p-10 text-center animate-pulse">Memuat data...</div> : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">

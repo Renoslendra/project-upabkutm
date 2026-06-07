@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { MapPin, ArrowRight, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 import bgUtm from '../components/image/gambarutm.webp';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 const filters = ['Semua', 'Akan Datang', 'Selesai'];
 
@@ -14,6 +16,7 @@ export default function Kegiatan() {
   const [events, setEvents] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const limit = 6;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -29,8 +32,9 @@ export default function Kegiatan() {
   useEffect(() => {
     const fetchEvents = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const url = new URL('http://localhost:5000/api/public/kegiatan');
+        const url = new URL(`${API_BASE_URL}/api/public/kegiatan`);
         url.searchParams.set('page', String(page));
         url.searchParams.set('limit', String(limit));
         url.searchParams.set('order', sortOrder === 'Terlama' ? 'asc' : 'desc');
@@ -44,14 +48,22 @@ export default function Kegiatan() {
         }
 
         const response = await fetch(url.toString());
+        if (!response.ok) {
+          throw new Error('Gagal memuat kegiatan dari server.');
+        }
         const result = await response.json();
 
         if (result.success) {
           setEvents(result.data || []);
           setTotal(result.total || 0);
+        } else {
+          throw new Error(result.message || 'Gagal memuat kegiatan dari server.');
         }
       } catch (error) {
         console.error('Gagal mengambil kegiatan:', error);
+        setEvents([]);
+        setTotal(0);
+        setError(error instanceof Error ? error.message : 'Gagal memuat kegiatan dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -124,7 +136,9 @@ export default function Kegiatan() {
             </div>
           </div>
 
-          {isLoading ? (
+          {error ? (
+            <ErrorNotice message={error} className="mb-8" />
+          ) : isLoading ? (
             <div className="py-12">
               <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>

@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
 exports.listPublic = async (req, res) => {
   try {
@@ -12,7 +13,7 @@ exports.listPublic = async (req, res) => {
 exports.create = async (req, res) => {
   const { nama, role, urutan } = req.body;
   let foto_url = "";
-  if (req.file) foto_url = `http://localhost:5000/uploads/${req.file.filename}`;
+  if (req.file) foto_url = `${BASE_URL}/uploads/${req.file.filename}`;
 
   try {
     const [result] = await db.query(
@@ -29,7 +30,7 @@ exports.update = async (req, res) => {
   const id = req.params.id;
   const { nama, role, urutan } = req.body;
   let foto_url = req.body.foto_url_lama || "";
-  if (req.file) foto_url = `http://localhost:5000/uploads/${req.file.filename}`;
+  if (req.file) foto_url = `${BASE_URL}/uploads/${req.file.filename}`;
 
   try {
     await db.query(

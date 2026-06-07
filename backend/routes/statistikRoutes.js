@@ -3,12 +3,12 @@ const router = express.Router();
 const statistikController = require("../controllers/statistikController");
 const verifyToken = require("../middleware/authMiddleware");
 
-// GET semua statistik - publik
-router.get("/", statistikController.list);
+// Semua route admin dilindungi JWT. Endpoint publik statistik tersedia di /api/public/statistik.
+router.use(verifyToken);
 
-// POST, PUT, DELETE - hanya untuk admin (perlu token)
-router.post("/", verifyToken, statistikController.create);
-router.put("/:id", verifyToken, statistikController.update);
-router.delete("/:id", verifyToken, statistikController.delete);
+router.get("/", statistikController.list);
+router.post("/", statistikController.create);
+router.put("/:id", statistikController.update);
+router.delete("/:id", statistikController.delete);
 
 module.exports = router;

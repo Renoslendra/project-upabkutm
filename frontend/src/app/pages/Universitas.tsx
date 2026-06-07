@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Eye, Target, ExternalLink, MapPin, Mail, Phone, GraduationCap, Users, BookOpen, Award } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 import { HeroBanner } from '../components/HeroBanner';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
+import { ErrorNotice } from '../components/ErrorNotice';
 import bgUtm from '../components/image/trunojoyo-rektorat21.jpg';
 
 // Gambar statis untuk fallback (jika database belum ada foto_url)
@@ -29,26 +31,41 @@ export default function Universitas() {
   const [informasiList, setInformasiList] = useState<any[]>([]);
   const [pimpinanList, setPimpinanList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         // Fetch Informasi Universitas
-        const resInfo = await fetch('http://localhost:5000/api/public/informasi-universitas');
+        const resInfo = await fetch(`${API_BASE_URL}/api/public/informasi-universitas`);
+        if (!resInfo.ok) {
+          throw new Error('Gagal memuat informasi universitas dari server.');
+        }
         const jsonInfo = await resInfo.json();
         if (jsonInfo.success && Array.isArray(jsonInfo.data)) {
           setInformasiList(jsonInfo.data);
+        } else {
+          throw new Error(jsonInfo.message || 'Gagal memuat informasi universitas dari server.');
         }
 
         // Fetch Data Pimpinan
-        const resPimpinan = await fetch('http://localhost:5000/api/pimpinan/public');
+        const resPimpinan = await fetch(`${API_BASE_URL}/api/pimpinan/public`);
+        if (!resPimpinan.ok) {
+          throw new Error('Gagal memuat data pimpinan dari server.');
+        }
         const jsonPimpinan = await resPimpinan.json();
         if (jsonPimpinan.success && Array.isArray(jsonPimpinan.data)) {
           setPimpinanList(jsonPimpinan.data);
+        } else {
+          throw new Error(jsonPimpinan.message || 'Gagal memuat data pimpinan dari server.');
         }
       } catch (e) {
         console.error('Gagal memuat data universitas', e);
+        setInformasiList([]);
+        setPimpinanList([]);
+        setError(e instanceof Error ? e.message : 'Gagal memuat data universitas dari server.');
       } finally {
         setIsLoading(false);
       }
@@ -185,7 +202,9 @@ export default function Universitas() {
             <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>Pusat informasi akademik dan administrasi mahasiswa.</p>
           </div>
 
-          {isLoading ? (
+          {error ? (
+            <ErrorNotice message={error} className="mb-8" />
+          ) : isLoading ? (
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>

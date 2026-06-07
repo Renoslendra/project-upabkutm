@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, Eye, Target, ListChecks, Upload } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { adminItems } from './AdminDashboard';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 type Kepala = {
   id?: number;
@@ -34,6 +36,7 @@ type TabKey = 'visi-misi' | 'struktur';
 export default function AdminProfil() {
   const [tab, setTab] = useState<TabKey>('visi-misi');
   const token = localStorage.getItem('token');
+  const [error, setError] = useState<string | null>(null);
 
   // STATE ASLI DARI DATABASE
   const [visi, setVisi] = useState('');
@@ -46,7 +49,11 @@ export default function AdminProfil() {
   useEffect(() => {
     const fetchProfil = async () => {
       try {
-        const resVM = await fetch('http://localhost:5000/api/public/visi-misi');
+        setError(null);
+        const resVM = await fetch(`${API_BASE_URL}/api/public/visi-misi`);
+        if (!resVM.ok) {
+          throw new Error('Gagal memuat data visi misi.');
+        }
         const vmData = await resVM.json();
         if (vmData.success) {
           const v = vmData.data.find((item: any) => item.kategori === 'visi');
@@ -56,9 +63,14 @@ export default function AdminProfil() {
           if (v) setVisi(v.konten);
           if (mList.length > 0) setMisi(mList);
           if (tList.length > 0) setTujuan(tList);
+        } else {
+          throw new Error(vmData.message || 'Gagal memuat data visi misi.');
         }
 
-        const resStruktur = await fetch('http://localhost:5000/api/public/struktur-organisasi');
+        const resStruktur = await fetch(`${API_BASE_URL}/api/public/struktur-organisasi`);
+        if (!resStruktur.ok) {
+          throw new Error('Gagal memuat data struktur organisasi.');
+        }
         const strukData = await resStruktur.json();
         if (strukData.success) {
           const k = strukData.data.find((item: any) => item.kategori === 'kepala');
@@ -68,8 +80,13 @@ export default function AdminProfil() {
             id: item.id, nama: item.nama, role: item.role, spesialisasi: item.spesialisasi || '', bio: item.bio || '', foto: item.foto_url || ''
           }));
           setStaff(sList);
+        } else {
+          throw new Error(strukData.message || 'Gagal memuat data struktur organisasi.');
         }
-      } catch (err) { console.error("Gagal load profil:", err); }
+      } catch (err) {
+        console.error("Gagal load profil:", err);
+        setError(err instanceof Error ? err.message : 'Gagal memuat profil.');
+      }
     };
     fetchProfil();
   }, []);
@@ -82,7 +99,8 @@ export default function AdminProfil() {
   const cancelVM = () => setVmEditing(false);
   const saveVM = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/profil/visi-misi', {
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/admin/profil/visi-misi`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
@@ -97,8 +115,14 @@ export default function AdminProfil() {
         setMisi(vmDraft.misi.filter((m) => m.trim()));
         setTujuan(vmDraft.tujuan.filter((t) => t.trim()));
         setVmEditing(false);
-      } else alert(result.message);
-    } catch (err) { console.error(err); }
+      } else {
+        setError(result.message || 'Gagal menyimpan visi misi.');
+        alert(result.message || 'Gagal menyimpan visi misi.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Gagal menyimpan visi misi.');
+    }
   };
   
   const updateArr = (type: 'misi' | 'tujuan', idx: number, val: string) => setVmDraft((p) => ({ ...p, [type]: p[type].map((item, i) => (i === idx ? val : item)) }));
@@ -122,7 +146,8 @@ export default function AdminProfil() {
     if (kepalaFile) formData.append('foto', kepalaFile);
 
     try {
-      const res = await fetch('http://localhost:5000/api/admin/profil/kepala', {
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/admin/profil/kepala`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }, // TANPA Content-Type agar browser otomatis set multipart
         body: formData,
@@ -131,8 +156,13 @@ export default function AdminProfil() {
       if (result.success) {
         setKepala({ ...kepalaDraft, foto: result.foto_url });
         setKepalaEditing(false);
+      } else {
+        throw new Error(result.message || 'Gagal menyimpan data kepala.');
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Gagal menyimpan data kepala.');
+    }
   };
 
   // ================= 4. FUNGSI SIMPAN STAFF (DENGAN FILE UPLOAD) =================
@@ -156,8 +186,9 @@ export default function AdminProfil() {
     if (staffFile) formData.append('foto', staffFile);
 
     try {
+      setError(null);
       const method = staffIsNew ? 'POST' : 'PUT';
-      const url = staffIsNew ? 'http://localhost:5000/api/admin/profil/staff' : `http://localhost:5000/api/admin/profil/staff/${staffDraft.id}`;
+      const url = staffIsNew ? `${API_BASE_URL}/api/admin/profil/staff` : `${API_BASE_URL}/api/admin/profil/staff/${staffDraft.id}`;
       
       const res = await fetch(url, {
         method,
@@ -173,16 +204,30 @@ export default function AdminProfil() {
           setStaff((prev) => prev.map((s) => (s.id === staffDraft.id ? { ...staffDraft, foto: result.foto_url } : s)));
         }
         cancelStaff();
+      } else {
+        throw new Error(result.message || 'Gagal menyimpan data staff.');
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Gagal menyimpan data staff.');
+    }
   };
 
   const removeStaff = async (id: number) => {
     if (!confirm('Yakin ingin menghapus staff ini?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/profil/staff/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if ((await res.json()).success) setStaff((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) { console.error(err); }
+      setError(null);
+      const res = await fetch(`${API_BASE_URL}/api/admin/profil/staff/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const result = await res.json();
+      if (result.success) {
+        setStaff((prev) => prev.filter((s) => s.id !== id));
+      } else {
+        throw new Error(result.message || 'Gagal menghapus staff.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Gagal menghapus staff.');
+    }
   };
 
   return (
@@ -193,6 +238,8 @@ export default function AdminProfil() {
         <button onClick={() => setTab('visi-misi')} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${tab === 'visi-misi' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-[var(--text-secondary)] bg-transparent'}`}>Visi, Misi & Tujuan</button>
         <button onClick={() => setTab('struktur')} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${tab === 'struktur' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-[var(--text-secondary)] bg-transparent'}`}>Struktur Organisasi</button>
       </div>
+
+      {error && <ErrorNotice message={error} className="mb-5" />}
 
       {/* VISI & MISI */}
       {tab === 'visi-misi' && (

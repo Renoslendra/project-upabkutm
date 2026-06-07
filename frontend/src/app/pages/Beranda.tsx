@@ -1,7 +1,9 @@
 import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { Brain, MessageCircle, BookOpen, ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
+import { ErrorNotice } from '../components/ErrorNotice';
 
 import heroImg1 from '../components/image/utm.jpg';
 import heroImg2 from '../components/image/utmjaya.webp';
@@ -38,6 +40,7 @@ export default function Beranda() {
   const [articles, setArticles] = useState<ArtikelBeranda[]>([]);
   const [kepala, setKepala] = useState<ProfilOrang | null>(null);
   const [loadingContent, setLoadingContent] = useState(true);
+  const [contentError, setContentError] = useState<string | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -49,11 +52,16 @@ export default function Beranda() {
   useEffect(() => {
     const fetchContent = async () => {
       setLoadingContent(true);
+      setContentError(null);
       try {
         const [artikelRes, strukturRes] = await Promise.all([
-          fetch('http://localhost:5000/api/public/artikel?limit=3'),
-          fetch('http://localhost:5000/api/public/struktur-organisasi'),
+          fetch(`${API_BASE_URL}/api/public/artikel?limit=3`),
+          fetch(`${API_BASE_URL}/api/public/struktur-organisasi`),
         ]);
+
+        if (!artikelRes.ok || !strukturRes.ok) {
+          throw new Error('Gagal memuat konten beranda dari server.');
+        }
 
         const artikelData = await artikelRes.json();
         const strukturData = await strukturRes.json();
@@ -72,8 +80,15 @@ export default function Beranda() {
             });
           }
         }
+
+        if (!artikelData.success || !strukturData.success) {
+          throw new Error('Gagal memuat konten beranda dari server.');
+        }
       } catch (error) {
         console.error('Gagal mengambil data beranda:', error);
+        setArticles([]);
+        setKepala(null);
+        setContentError(error instanceof Error ? error.message : 'Gagal memuat konten beranda dari server.');
       } finally {
         setLoadingContent(false);
       }
@@ -333,7 +348,9 @@ export default function Beranda() {
             </div>
             <Link to="/artikel" className="btn-ghost">Lihat semua <ArrowRight size={16} /></Link>
           </div>
-          {loadingContent ? (
+          {contentError ? (
+            <ErrorNotice message={contentError} className="mb-8" />
+          ) : loadingContent ? (
             <div className="py-12 flex justify-center">
               <div className="w-10 h-10 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
             </div>
