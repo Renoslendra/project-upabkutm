@@ -127,6 +127,16 @@ CREATE TABLE informasi_universitas (
     INDEX idx_created (created_at)
 );
 
+CREATE TABLE pimpinan_universitas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama VARCHAR(150) NOT NULL,
+    role VARCHAR(100) NOT NULL,
+    foto_url VARCHAR(255) NULL,
+    urutan INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Admin (Password: admin123 sudah di-hash bcrypt)
 INSERT INTO admin (username, password, nama) VALUES 
 ('admin', '$2b$10$weaQsLrV/LxcWv7GRt7MF.OjJMmWn3EavtQQD3SgSYEvcrsnPoHdW', 'Admin UPA-BK');
@@ -199,3 +209,30 @@ INSERT INTO informasi_universitas (judul, deskripsi, kategori, link_edaran, stat
 ('Peraturan Akademik Tahun Akademik 2024/2025', 'Perubahan dan penambahan peraturan akademik yang berlaku untuk semua mahasiswa, dosen, dan akademisi di UTM mulai TA 2024/2025.', 'Akademik', 'https://example.com/peraturan-akademik-2024', 'Aktif'),
 ('Penyesuaian Jadwal Perkuliahan Akhir Semester', 'Penjadwalan ulang perkuliahan minggu terakhir sebelum ujian akhir semester untuk optimalisasi waktu belajar mahasiswa.', 'Pengumuman', 'https://example.com/jadwal-perkuliahan-gasal', 'Aktif'),
 ('Program Akselerator Skripsi Semester Ini', 'Kesempatan bagi mahasiswa semester akhir untuk mempercepat penyelesaian skripsi dengan dukungan intensif dari pembimbing dan UPA-BK.', 'Akademik', 'https://example.com/akselerator-skripsi', 'Aktif');
+
+-- Seeding pimpinan universitas
+INSERT INTO pimpinan_universitas (nama, role, foto_url, urutan) VALUES 
+('Prof. Dr. Safi'', S.H., M.H.', 'Rektor', NULL, 1),
+('Prof. Dr. Achmad Amzeri, S.P., M.P.', 'Wakil Rektor I (Akademik)', NULL, 2),
+('Ir. Ari Basuki, S.T., M.T.', 'Wakil Rektor II (Keuangan & Umum)', NULL, 3),
+('Surokim, S.Sos., S.H., M.Si.', 'Wakil Rektor III (Kemahasiswaan)', NULL, 4);
+
+-- Update Foto Rektor
+UPDATE pimpinan_universitas 
+SET foto_url = 'https://lh3.googleusercontent.com/d/1_twSTl3RlQQadXS-u6c0OPmauimcMrmz' 
+WHERE urutan = 1;
+
+-- Update Foto Wakil Rektor I
+UPDATE pimpinan_universitas 
+SET foto_url = 'https://lh3.googleusercontent.com/d/1ZdWb5K8X83ocjSM532QqjNIN6lDZafcN' 
+WHERE urutan = 2;
+
+-- Update Foto Wakil Rektor II
+UPDATE pimpinan_universitas 
+SET foto_url = 'https://lh3.googleusercontent.com/d/14ohKJBP957t85ho76m55vcpymPuuVjZ0' 
+WHERE urutan = 3;
+
+-- Update Foto Wakil Rektor III
+UPDATE pimpinan_universitas 
+SET foto_url = 'https://lh3.googleusercontent.com/d/1Y7djT4rJPYDzVNF_39PjA6vcz8LUjtcj' 
+WHERE urutan = 4;

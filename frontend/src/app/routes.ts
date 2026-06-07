@@ -26,6 +26,7 @@ import SopKonseling from './pages/SopKonseling';
 import StatistikProdi from './pages/StatistikProdi';
 import Universitas from './pages/Universitas';
 import NotFound from './pages/NotFound';
+import AdminPimpinan from './pages/AdminPimpinan';
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
           { path: 'admin/statistik', Component: AdminStatistik },
           { path: 'admin/bantuan', Component: AdminBantuan },
           { path: 'admin/informasi-universitas', Component: AdminInformasiUniversitas },
+          { path: 'admin/pimpinan', Component: AdminPimpinan },
           { path: 'admin/profil', Component: AdminProfil },
         ],
       },
