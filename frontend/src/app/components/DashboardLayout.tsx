@@ -13,7 +13,7 @@ export interface NavItem {
 export function DashboardLayout({
   items, title, subtitle, role = 'Admin', children,
 }: {
-  items: NavItem[]; title: string; subtitle?: string; role?: string; children: ReactNode;
+  items: NavItem[]; title: string; subtitle?: string; role?: string; name?: string; children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
