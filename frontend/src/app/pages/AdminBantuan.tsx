@@ -111,12 +111,10 @@ export default function AdminBantuan() {
         setContactEditing(false);
       } else {
         setError(result.message || 'Gagal menyimpan kontak');
-        alert(result.message || 'Gagal menyimpan kontak');
       }
     } catch (err) {
       console.error('Error saving contact:', err);
       setError('Terjadi kesalahan jaringan saat menyimpan kontak');
-      alert('Terjadi kesalahan jaringan');
     }
   };
 
@@ -145,7 +143,7 @@ export default function AdminBantuan() {
 
   const saveFaq = async () => {
     if (!faqDraft || !faqDraft.q.trim() || !faqDraft.a.trim()) {
-      alert('Pertanyaan dan jawaban harus diisi');
+      setError('Pertanyaan dan jawaban wajib diisi');
       return;
     }
     try {
@@ -181,12 +179,10 @@ export default function AdminBantuan() {
         cancelFaq();
       } else {
         setError(result.message || 'Gagal menyimpan FAQ');
-        alert(result.message || 'Gagal menyimpan FAQ');
       }
     } catch (err) {
       console.error('Error saving faq:', err);
       setError('Terjadi kesalahan jaringan saat menyimpan FAQ');
-      alert('Terjadi kesalahan jaringan');
     }
   };
 
@@ -204,12 +200,10 @@ export default function AdminBantuan() {
         if (faqDraft?.id === id) cancelFaq();
       } else {
         setError(result.message || 'Gagal menghapus FAQ');
-        alert(result.message || 'Gagal menghapus FAQ');
       }
     } catch (err) {
       console.error('Error deleting faq:', err);
       setError('Terjadi kesalahan jaringan saat menghapus FAQ');
-      alert('Terjadi kesalahan jaringan');
     }
   };
 

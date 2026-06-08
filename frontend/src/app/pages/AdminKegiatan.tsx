@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
+import { FormAlert } from '../components/FormAlert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { adminItems } from './AdminDashboard';
 import { ErrorNotice } from '../components/ErrorNotice';
@@ -33,6 +34,7 @@ export default function AdminKegiatan() {
   const [isOpen, setIsOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [formData, setFormData] = useState<Kegiatan>(blankKegiatan());
+  const [formError, setFormError] = useState('');
   const [error, setError] = useState<string | null>(null);
   const token = localStorage.getItem('token');
 
@@ -66,21 +68,24 @@ export default function AdminKegiatan() {
 
   const openCreate = () => {
     setFormData(blankKegiatan());
+    setFormError('');
     setIsNew(true);
     setIsOpen(true);
   };
 
   const openEdit = (item: Kegiatan) => {
     setFormData(item);
+    setFormError('');
     setIsNew(false);
     setIsOpen(true);
   };
 
   const handleSave = async () => {
     if (!formData.nama_kegiatan.trim() || !formData.tanggal.trim() || !formData.lokasi.trim()) {
-      alert('Nama kegiatan, tanggal, dan lokasi harus diisi');
+      setFormError('Nama kegiatan, tanggal, dan lokasi wajib diisi');
       return;
     }
+    setFormError('');
 
     try {
       setError(null);
@@ -215,18 +220,19 @@ export default function AdminKegiatan() {
       </div>
 
       {/* Modal Form */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) setFormError(''); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{isNew ? 'Tambah Kegiatan' : 'Edit Kegiatan'}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
+            {formError && <FormAlert message={formError} onClose={() => setFormError('')} />}
             <div>
               <label className="block text-sm font-medium mb-1">Nama Kegiatan</label>
               <input
                 type="text"
-                className="input-field w-full"
+                className={`input-field w-full ${formError && !formData.nama_kegiatan.trim() ? 'ring-2 ring-red-400 border-red-400' : ''}`}
                 value={formData.nama_kegiatan}
                 onChange={(e) => setFormData({ ...formData, nama_kegiatan: e.target.value })}
               />
@@ -236,7 +242,7 @@ export default function AdminKegiatan() {
               <label className="block text-sm font-medium mb-1">Tanggal</label>
               <input
                 type="text"
-                className="input-field w-full"
+                className={`input-field w-full ${formError && !formData.tanggal.trim() ? 'ring-2 ring-red-400 border-red-400' : ''}`}
                 placeholder="e.g., 15 Mei 2026"
                 value={formData.tanggal}
                 onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
@@ -247,7 +253,7 @@ export default function AdminKegiatan() {
               <label className="block text-sm font-medium mb-1">Lokasi</label>
               <input
                 type="text"
-                className="input-field w-full"
+                className={`input-field w-full ${formError && !formData.lokasi.trim() ? 'ring-2 ring-red-400 border-red-400' : ''}`}
                 value={formData.lokasi}
                 onChange={(e) => setFormData({ ...formData, lokasi: e.target.value })}
               />

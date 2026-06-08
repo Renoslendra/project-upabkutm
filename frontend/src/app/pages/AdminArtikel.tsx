@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
+import { FormAlert } from '../components/FormAlert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { adminItems } from './AdminDashboard';
 import { ErrorNotice } from '../components/ErrorNotice';
@@ -13,7 +14,6 @@ type Artikel = {
   excerpt?: string;
   konten?: string;
   image_url?: string;
-  views: number;
   status: 'Published' | 'Draft';
 };
 
@@ -24,7 +24,6 @@ const blankArtikel = (): Artikel => ({
   excerpt: '',
   konten: '',
   image_url: '',
-  views: 0,
   status: 'Draft',
 });
 
@@ -35,6 +34,7 @@ export default function AdminArtikel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
   const [formData, setFormData] = useState<Artikel>(blankArtikel());
+  const [formError, setFormError] = useState('');
   const [error, setError] = useState<string | null>(null);
   const token = localStorage.getItem('token');
 
@@ -68,21 +68,24 @@ export default function AdminArtikel() {
 
   const openCreate = () => {
     setFormData(blankArtikel());
+    setFormError('');
     setIsNew(true);
     setIsOpen(true);
   };
 
   const openEdit = (item: Artikel) => {
     setFormData(item);
+    setFormError('');
     setIsNew(false);
     setIsOpen(true);
   };
 
   const handleSave = async () => {
-    if (!formData.judul.trim()) {
-      alert('Judul artikel harus diisi');
+    if (!formData.judul.trim() || !formData.konten?.trim()) {
+      setFormError('Judul dan Konten wajib diisi');
       return;
     }
+    setFormError('');
 
     try {
       setError(null);
@@ -167,7 +170,6 @@ export default function AdminArtikel() {
               <tr className="bg-[#F9F2F4]">
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Judul Artikel</th>
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Kategori</th>
-                <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Views</th>
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Status</th>
                 <th className="text-center px-6 py-3 eyebrow text-[var(--primary-dark)]">Aksi</th>
               </tr>
@@ -175,13 +177,13 @@ export default function AdminArtikel() {
             <tbody className="divide-y divide-[var(--border)]">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-[var(--text-secondary)]">
+                  <td colSpan={4} className="px-6 py-10 text-center text-[var(--text-secondary)]">
                     Memuat artikel...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-[var(--text-secondary)]">
+                  <td colSpan={4} className="px-6 py-10 text-center text-[var(--text-secondary)]">
                     Tidak ada artikel ditemukan.
                   </td>
                 </tr>
@@ -189,7 +191,6 @@ export default function AdminArtikel() {
                 <tr key={item.id} className="hover:bg-[var(--surface-hover)]">
                   <td className="px-6 py-4 font-medium">{item.judul}</td>
                   <td className="px-6 py-4 text-[var(--text-secondary)]">{item.kategori || '-'}</td>
-                  <td className="px-6 py-4 text-[var(--text-secondary)]">{item.views}</td>
                   <td className="px-6 py-4">
                     <span className={`badge ${item.status === 'Published' ? 'badge-success' : 'badge-neutral'}`}>
                       {item.status}
@@ -214,18 +215,19 @@ export default function AdminArtikel() {
       </div>
 
       {/* Modal Form */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) setFormError(''); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{isNew ? 'Tambah Artikel' : 'Edit Artikel'}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 max-h-96 overflow-y-auto">
+            {formError && <FormAlert message={formError} onClose={() => setFormError('')} />}
             <div>
               <label className="block text-sm font-medium mb-1">Judul</label>
               <input
                 type="text"
-                className="input-field w-full"
+                className={`input-field w-full ${formError && !formData.judul.trim() ? 'ring-2 ring-red-400 border-red-400' : ''}`}
                 value={formData.judul}
                 onChange={(e) => setFormData({ ...formData, judul: e.target.value })}
               />
@@ -255,7 +257,7 @@ export default function AdminArtikel() {
             <div>
               <label className="block text-sm font-medium mb-1">Konten</label>
               <textarea
-                className="input-field w-full"
+                className={`input-field w-full ${formError && !formData.konten?.trim() ? 'ring-2 ring-red-400 border-red-400' : ''}`}
                 rows={4}
                 value={formData.konten || ''}
                 onChange={(e) => setFormData({ ...formData, konten: e.target.value })}

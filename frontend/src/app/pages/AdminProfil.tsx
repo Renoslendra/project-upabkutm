@@ -117,7 +117,6 @@ export default function AdminProfil() {
         setVmEditing(false);
       } else {
         setError(result.message || 'Gagal menyimpan visi misi.');
-        alert(result.message || 'Gagal menyimpan visi misi.');
       }
     } catch (err) {
       console.error(err);

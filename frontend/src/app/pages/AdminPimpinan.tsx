@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Edit, Trash2, Save, X, Image as ImageIcon } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
+import { FormAlert } from '../components/FormAlert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { adminItems } from './AdminDashboard';
 import { ErrorNotice } from '../components/ErrorNotice';
@@ -23,6 +24,7 @@ export default function AdminPimpinan() {
   // Form States
   const [formData, setFormData] = useState<Partial<Pimpinan>>({});
   const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [formError, setFormError] = useState('');
   const [error, setError] = useState<string | null>(null);
   
   const token = localStorage.getItem('token');
@@ -57,6 +59,7 @@ export default function AdminPimpinan() {
   const openCreate = () => {
     setFormData({ nama: '', role: '', urutan: 1, foto_url: '' });
     setFotoFile(null);
+    setFormError('');
     setIsNew(true);
     setIsOpen(true);
   };
@@ -64,12 +67,17 @@ export default function AdminPimpinan() {
   const openEdit = (item: Pimpinan) => {
     setFormData(item);
     setFotoFile(null);
+    setFormError('');
     setIsNew(false);
     setIsOpen(true);
   };
 
   const handleSave = async () => {
-    if (!formData.nama || !formData.role) return alert('Nama dan Jabatan wajib diisi');
+    if (!formData.nama || !formData.role) {
+      setFormError('Nama dan Jabatan wajib diisi');
+      return;
+    }
+    setFormError('');
 
     const payload = new FormData();
     payload.append('nama', formData.nama);
@@ -96,11 +104,9 @@ export default function AdminPimpinan() {
         fetchData();
       } else {
         setError(result.message || 'Gagal menyimpan data pimpinan.');
-        alert(result.message || 'Gagal menyimpan data pimpinan.');
       }
     } catch (err) {
       setError('Terjadi kesalahan jaringan saat menyimpan data pimpinan.');
-      alert('Terjadi kesalahan jaringan');
     }
   };
 
@@ -164,18 +170,19 @@ export default function AdminPimpinan() {
       )}
 
       {/* Modal Form */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) setFormError(''); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>{isNew ? 'Tambah Pimpinan' : 'Edit Pimpinan'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
+            {formError && <FormAlert message={formError} onClose={() => setFormError('')} />}
             <div>
               <label className="block text-sm font-medium mb-1">Nama Lengkap & Gelar</label>
-              <input type="text" className="input-field w-full" value={formData.nama || ''} onChange={e => setFormData({...formData, nama: e.target.value})} />
+              <input type="text" className={`input-field w-full ${formError && !formData.nama ? 'ring-2 ring-red-400 border-red-400' : ''}`} value={formData.nama || ''} onChange={e => setFormData({...formData, nama: e.target.value})} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Jabatan / Role</label>
-                <input type="text" className="input-field w-full" placeholder="Cth: Rektor" value={formData.role || ''} onChange={e => setFormData({...formData, role: e.target.value})} />
+                <input type="text" className={`input-field w-full ${formError && !formData.role ? 'ring-2 ring-red-400 border-red-400' : ''}`} placeholder="Cth: Rektor" value={formData.role || ''} onChange={e => setFormData({...formData, role: e.target.value})} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Urutan Tampil</label>

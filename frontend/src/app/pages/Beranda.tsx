@@ -10,6 +10,7 @@ import heroImg2 from '../components/image/utmjaya.webp';
 import heroImg3 from '../components/image/utmku.jpg';
 import heroImg4 from '../components/image/gambarutm.webp';
 import heroImg5 from '../components/image/gerbangutm.jpg';
+import tentangImg from '../components/image/tentangupabk.png';
 
 const heroSlides = [
   { src: heroImg1, alt: 'Kampus Universitas Trunojoyo Madura' },
@@ -241,7 +242,7 @@ export default function Beranda() {
                   {kepala?.spesialisasi || 'Kepala UPA-BK Universitas Trunojoyo Madura'}
                 </div>
               </div>
-              <Link to="/tentang" className="btn-ghost mt-4 inline-flex items-center gap-2">
+              <Link to="/struktur-organisasi" className="btn-ghost mt-4 inline-flex items-center gap-2">
                 Selengkapnya <ArrowRight size={14} />
               </Link>
             </div>
@@ -323,7 +324,7 @@ export default function Beranda() {
           <div className="lg:col-span-7 relative">
             <div className="rounded-[2rem] overflow-hidden" style={{ boxShadow: 'var(--shadow-lg)' }}>
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1000&q=80"
+                src={tentangImg}
                 alt="Tim UPA-BK"
                 className="w-full h-[420px] object-cover"
               />
@@ -333,7 +334,7 @@ export default function Beranda() {
             <div className="eyebrow">Tentang UPA-BK</div>
             <h2 style={{ fontSize: 'clamp(1.75rem,3vw,2.5rem)' }}>Mendampingi Mahasiswa dengan Empati dan Profesionalitas</h2>
             <p>Kami percaya bahwa setiap mahasiswa berhak atas ruang aman untuk bercerita, dipahami, dan didampingi tanpa penghakiman. UPA-BK UTM hadir sebagai sahabat akademik dan psikologis Anda.</p>
-            <Link to="/tentang" className="btn-ghost">Kenali Kami <ArrowRight size={16} /></Link>
+            <Link to="/struktur-organisasi" className="btn-ghost">Kenali Kami <ArrowRight size={16} /></Link>
           </div>
         </div>
       </section>
