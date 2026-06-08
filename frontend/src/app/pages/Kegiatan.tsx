@@ -171,9 +171,9 @@ export default function Kegiatan() {
                       </div>
                       <p className="text-sm mb-4">{e.deskripsi}</p>
                       {e.content_link ? (
-                        <a href={e.content_link} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm self-start mt-auto inline-flex items-center gap-1 hover:gap-2 transition-all">Lihat Detail <ArrowRight size={14} /></a>
+                        <a href={e.content_link} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold self-start mt-auto inline-flex items-center gap-1.5 hover:gap-2.5 transition-all duration-200" style={{ color: 'var(--primary)' }}>Lihat Detail <ArrowRight size={14} /></a>
                       ) : (
-                        <span className="btn-ghost text-sm self-start mt-auto cursor-default opacity-50">Lihat Detail <ArrowRight size={14} /></span>
+                        <span className="text-sm font-semibold self-start mt-auto inline-flex items-center gap-1.5" style={{ color: 'var(--primary)', opacity: 0.6 }}>Lihat Detail <ArrowRight size={14} /></span>
                       )}
                     </div>
                   </div>
