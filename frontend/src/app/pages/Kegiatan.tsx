@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { MapPin, ArrowRight, Search, ChevronDown, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { MapPin, ArrowRight, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { ImageWithFallback } from '../components/image/ImageWithFallback';
 import bgUtm from '../components/image/gambarutm.webp';
 import { ErrorNotice } from '../components/ErrorNotice';
-import { Dialog, DialogContent } from '../components/ui/dialog';
 
 const filters = ['Semua', 'Akan Datang', 'Selesai'];
 
@@ -18,7 +17,6 @@ export default function Kegiatan() {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const limit = 6;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -172,7 +170,11 @@ export default function Kegiatan() {
                         <MapPin size={12} /> {e.lokasi}
                       </div>
                       <p className="text-sm mb-4">{e.deskripsi}</p>
-                      <button onClick={() => setSelectedEvent(e)} className="btn-ghost text-sm self-start mt-auto cursor-pointer inline-flex items-center gap-1 hover:gap-2 transition-all">Lihat Detail <ArrowRight size={14} /></button>
+                      {e.content_link ? (
+                        <a href={e.content_link} target="_blank" rel="noopener noreferrer" className="btn-ghost text-sm self-start mt-auto inline-flex items-center gap-1 hover:gap-2 transition-all">Lihat Detail <ArrowRight size={14} /></a>
+                      ) : (
+                        <span className="btn-ghost text-sm self-start mt-auto cursor-default opacity-50">Lihat Detail <ArrowRight size={14} /></span>
+                      )}
                     </div>
                   </div>
                 </article>
@@ -213,46 +215,6 @@ export default function Kegiatan() {
         </div>
       </section>
 
-      {/* Detail Modal */}
-      <Dialog open={!!selectedEvent} onOpenChange={(open) => { if (!open) setSelectedEvent(null); }}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          {selectedEvent && (
-            <>
-              <div className="relative h-56 sm:h-64 overflow-hidden" style={{ background: 'var(--primary-fixed)' }}>
-                <ImageWithFallback
-                  src={selectedEvent.image_url || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80'}
-                  alt={selectedEvent.nama_kegiatan}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute top-4 left-4">
-                  <span className="badge badge-neutral">{selectedEvent.status || 'Akan Datang'}</span>
-                </div>
-              </div>
-              <div className="p-6 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold mb-4" style={{ color: 'var(--primary-dark)' }}>
-                  {selectedEvent.nama_kegiatan}
-                </h2>
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <Calendar size={16} style={{ color: 'var(--primary)' }} />
-                    <span>{selectedEvent.tanggal || 'Belum ditentukan'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <MapPin size={16} style={{ color: 'var(--primary)' }} />
-                    <span>{selectedEvent.lokasi || 'Belum ditentukan'}</span>
-                  </div>
-                </div>
-                <div className="h-px mb-6" style={{ background: 'var(--border)' }} />
-                <h4 className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Deskripsi Kegiatan</h4>
-                <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
-                  {selectedEvent.deskripsi || 'Deskripsi kegiatan belum tersedia.'}
-                </p>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

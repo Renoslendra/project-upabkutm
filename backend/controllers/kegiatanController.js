@@ -32,7 +32,7 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { nama_kegiatan, tanggal, lokasi, deskripsi, image_url, status } = req.body;
+  const { nama_kegiatan, tanggal, lokasi, deskripsi, content_link, image_url, status } = req.body;
   if (!nama_kegiatan || !tanggal || !lokasi) {
     return res.status(400).json({ success: false, message: "nama_kegiatan, tanggal, lokasi wajib diisi" });
   }
@@ -42,8 +42,8 @@ exports.create = async (req, res) => {
   try {
     const adminId = req.admin ? req.admin.id : null;
     const [result] = await db.query(
-      "INSERT INTO kegiatan (nama_kegiatan, tanggal, lokasi, deskripsi, image_url, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [nama_kegiatan, tanggal, lokasi, deskripsi || null, image_url || null, status || 'Akan Datang', adminId]
+      "INSERT INTO kegiatan (nama_kegiatan, tanggal, lokasi, deskripsi, content_link, image_url, status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [nama_kegiatan, tanggal, lokasi, deskripsi || null, content_link || null, image_url || null, status || 'Akan Datang', adminId]
     );
     const [rows] = await db.query("SELECT * FROM kegiatan WHERE id = ?", [result.insertId]);
     await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'kegiatan', recordId: result.insertId, keterangan: `Membuat kegiatan: ${nama_kegiatan}`, ipAddress: req.ip });
@@ -56,7 +56,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const id = req.params.id;
-  const { nama_kegiatan, tanggal, lokasi, deskripsi, image_url, status } = req.body;
+  const { nama_kegiatan, tanggal, lokasi, deskripsi, content_link, image_url, status } = req.body;
   if (!nama_kegiatan || !tanggal || !lokasi) {
     return res.status(400).json({ success: false, message: "nama_kegiatan, tanggal, lokasi wajib diisi" });
   }
@@ -66,8 +66,8 @@ exports.update = async (req, res) => {
   try {
     const adminId = req.admin ? req.admin.id : null;
     await db.query(
-      "UPDATE kegiatan SET nama_kegiatan = ?, tanggal = ?, lokasi = ?, deskripsi = ?, image_url = ?, status = ? WHERE id = ?",
-      [nama_kegiatan, tanggal, lokasi, deskripsi || null, image_url || null, status || 'Akan Datang', id]
+      "UPDATE kegiatan SET nama_kegiatan = ?, tanggal = ?, lokasi = ?, deskripsi = ?, content_link = ?, image_url = ?, status = ? WHERE id = ?",
+      [nama_kegiatan, tanggal, lokasi, deskripsi || null, content_link || null, image_url || null, status || 'Akan Datang', id]
     );
     const [rows] = await db.query("SELECT * FROM kegiatan WHERE id = ?", [id]);
     await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'kegiatan', recordId: parseInt(id), keterangan: `Mengupdate kegiatan: ${nama_kegiatan}`, ipAddress: req.ip });

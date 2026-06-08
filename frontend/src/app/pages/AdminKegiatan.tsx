@@ -13,6 +13,7 @@ type Kegiatan = {
   tanggal: string;
   lokasi: string;
   deskripsi?: string;
+  content_link?: string;
   image_url?: string;
   status: 'Akan Datang' | 'Selesai';
 };
@@ -23,6 +24,7 @@ const blankKegiatan = (): Kegiatan => ({
   tanggal: '',
   lokasi: '',
   deskripsi: '',
+  content_link: '',
   image_url: '',
   status: 'Akan Datang',
 });
@@ -267,6 +269,18 @@ export default function AdminKegiatan() {
                 value={formData.deskripsi || ''}
                 onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Link Detail Kegiatan</label>
+              <input
+                type="url"
+                className="input-field w-full"
+                placeholder="https://contoh.com/detail-kegiatan"
+                value={formData.content_link || ''}
+                onChange={(e) => setFormData({ ...formData, content_link: e.target.value })}
+              />
+              <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Link eksternal yang akan dibuka saat user klik "Lihat Detail"</p>
             </div>
 
             <div>
