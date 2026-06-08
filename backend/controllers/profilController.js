@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const logAktivitas = require("../config/logAktivitas");
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
 // 1. Update Visi Misi & Tujuan
@@ -21,6 +22,8 @@ exports.updateVisiMisi = async (req, res) => {
         await db.query("INSERT INTO profil_visi_misi (kategori, konten, urutan) VALUES (?, ?, ?)", ["tujuan", tujuan[i], i + 1]);
       }
     }
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'profil_visi_misi', recordId: null, keterangan: 'Mengupdate visi, misi & tujuan', ipAddress: req.ip });
     res.json({ success: true, message: "Visi, Misi & Tujuan berhasil diupdate" });
   } catch (error) {
     console.error(error);
@@ -47,6 +50,8 @@ exports.updateKepala = async (req, res) => {
       [nama, spesialisasi, bio, foto_url]);
     }
     res.json({ success: true, message: "Kepala berhasil diupdate", foto_url });
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'struktur_organisasi', recordId: null, keterangan: `Mengupdate kepala: ${nama}`, ipAddress: req.ip });
   } catch (error) { console.error(error); res.status(500).json({ success: false, message: "Server Error" }); }
 };
 
@@ -60,6 +65,8 @@ exports.createStaff = async (req, res) => {
     const [result] = await db.query("INSERT INTO struktur_organisasi (kategori, nama, role, spesialisasi, bio, foto_url) VALUES ('staff', ?, ?, ?, ?, ?)", 
     [nama, role, spesialisasi, bio, foto_url]);
     res.json({ success: true, data: { insertId: result.insertId, foto_url } });
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'struktur_organisasi', recordId: result.insertId, keterangan: `Menambah staff: ${nama}`, ipAddress: req.ip });
   } catch (error) { console.error(error); res.status(500).json({ success: false, message: "Server Error" }); }
 };
 
@@ -72,12 +79,16 @@ exports.updateStaff = async (req, res) => {
     await db.query("UPDATE struktur_organisasi SET nama=?, role=?, spesialisasi=?, bio=?, foto_url=? WHERE id=? AND kategori='staff'", 
     [nama, role, spesialisasi, bio, foto_url, req.params.id]);
     res.json({ success: true, foto_url });
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'struktur_organisasi', recordId: parseInt(req.params.id), keterangan: `Mengupdate staff: ${nama}`, ipAddress: req.ip });
   } catch (error) { console.error(error); res.status(500).json({ success: false, message: "Server Error" }); }
 };
 
 exports.deleteStaff = async (req, res) => {
   try {
     await db.query("DELETE FROM struktur_organisasi WHERE id=? AND kategori='staff'", [req.params.id]);
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'DELETE', tabel: 'struktur_organisasi', recordId: parseInt(req.params.id), keterangan: `Menghapus staff id: ${req.params.id}`, ipAddress: req.ip });
     res.json({ success: true });
   } catch (error) { res.status(500).json({ success: false, message: "Server Error" }); }
 };

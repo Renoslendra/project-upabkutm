@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const logAktivitas = require("../config/logAktivitas");
 
 exports.list = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -50,13 +51,15 @@ exports.create = async (req, res) => {
       .json({ success: false, message: "Judul minimal 3 karakter" });
   }
   try {
+    const adminId = req.admin ? req.admin.id : null;
     const [result] = await db.query(
-      "INSERT INTO informasi_universitas (judul, deskripsi, kategori, link_edaran, status) VALUES (?, ?, ?, ?, ?)",
-      [judul, deskripsi, kategori, link_edaran || null, status || 'Aktif']
+      "INSERT INTO informasi_universitas (judul, deskripsi, kategori, link_edaran, status, created_by) VALUES (?, ?, ?, ?, ?, ?)",
+      [judul, deskripsi, kategori, link_edaran || null, status || 'Aktif', adminId]
     );
     const [rows] = await db.query("SELECT * FROM informasi_universitas WHERE id = ?", [
       result.insertId,
     ]);
+    await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'informasi_universitas', recordId: result.insertId, keterangan: `Membuat informasi: ${judul}`, ipAddress: req.ip });
     res.status(201).json({
       success: true,
       message: "Informasi universitas berhasil dibuat",
@@ -83,11 +86,13 @@ exports.update = async (req, res) => {
       .json({ success: false, message: "Judul minimal 3 karakter" });
   }
   try {
+    const adminId = req.admin ? req.admin.id : null;
     await db.query(
       "UPDATE informasi_universitas SET judul = ?, deskripsi = ?, kategori = ?, link_edaran = ?, status = ? WHERE id = ?",
       [judul, deskripsi, kategori, link_edaran || null, status || 'Aktif', id]
     );
     const [rows] = await db.query("SELECT * FROM informasi_universitas WHERE id = ?", [id]);
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'informasi_universitas', recordId: parseInt(id), keterangan: `Mengupdate informasi: ${judul}`, ipAddress: req.ip });
     res.json({
       success: true,
       message: "Informasi universitas berhasil diupdate",
@@ -102,7 +107,9 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   const id = req.params.id;
   try {
+    const adminId = req.admin ? req.admin.id : null;
     await db.query("DELETE FROM informasi_universitas WHERE id = ?", [id]);
+    await logAktivitas({ adminId, aksi: 'DELETE', tabel: 'informasi_universitas', recordId: parseInt(id), keterangan: `Menghapus informasi id: ${id}`, ipAddress: req.ip });
     res.json({ success: true, message: "Informasi universitas berhasil dihapus" });
   } catch (err) {
     console.error("Error delete informasi universitas:", err);

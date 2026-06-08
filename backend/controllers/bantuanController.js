@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const logAktivitas = require("../config/logAktivitas");
 
 exports.list = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -39,11 +40,13 @@ exports.create = async (req, res) => {
     return res.status(400).json({ success: false, message: "Pertanyaan minimal 5 karakter" });
   }
   try {
+    const adminId = req.admin ? req.admin.id : null;
     const [result] = await db.query(
-      "INSERT INTO faq (pertanyaan, jawaban) VALUES (?, ?)",
-      [pertanyaan, jawaban]
+      "INSERT INTO faq (pertanyaan, jawaban, created_by) VALUES (?, ?, ?)",
+      [pertanyaan, jawaban, adminId]
     );
     const [rows] = await db.query("SELECT * FROM faq WHERE id = ?", [result.insertId]);
+    await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'faq', recordId: result.insertId, keterangan: `Membuat FAQ: ${pertanyaan.substring(0, 50)}...`, ipAddress: req.ip });
     res.status(201).json({ success: true, message: "Bantuan berhasil dibuat", data: rows[0] });
   } catch (err) {
     console.error("Error create bantuan:", err);
@@ -61,11 +64,13 @@ exports.update = async (req, res) => {
     return res.status(400).json({ success: false, message: "Pertanyaan minimal 5 karakter" });
   }
   try {
+    const adminId = req.admin ? req.admin.id : null;
     await db.query(
       "UPDATE faq SET pertanyaan = ?, jawaban = ? WHERE id = ?",
       [pertanyaan, jawaban, id]
     );
     const [rows] = await db.query("SELECT * FROM faq WHERE id = ?", [id]);
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'faq', recordId: parseInt(id), keterangan: `Mengupdate FAQ id: ${id}`, ipAddress: req.ip });
     res.json({ success: true, message: "Bantuan berhasil diupdate", data: rows[0] });
   } catch (err) {
     console.error("Error update bantuan:", err);
@@ -76,7 +81,9 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   const id = req.params.id;
   try {
+    const adminId = req.admin ? req.admin.id : null;
     await db.query("DELETE FROM faq WHERE id = ?", [id]);
+    await logAktivitas({ adminId, aksi: 'DELETE', tabel: 'faq', recordId: parseInt(id), keterangan: `Menghapus FAQ id: ${id}`, ipAddress: req.ip });
     res.json({ success: true, message: "Bantuan berhasil dihapus" });
   } catch (err) {
     console.error("Error delete bantuan:", err);
@@ -111,6 +118,8 @@ exports.updateKontak = async (req, res) => {
         [telepon, email, jam_layanan]
       );
     }
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'kontak', recordId: 1, keterangan: `Update kontak: ${email}`, ipAddress: req.ip });
     res.json({ success: true, message: "Informasi kontak berhasil diperbarui" });
   } catch (err) {
     console.error("Error update kontak:", err);

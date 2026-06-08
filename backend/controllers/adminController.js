@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
+const logAktivitas = require("../config/logAktivitas");
 
 exports.list = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -49,6 +50,8 @@ exports.create = async (req, res) => {
       [username, hashedPassword, nama || null]
     );
     const [rows] = await db.query("SELECT id, username, nama, created_at FROM admin WHERE id = ?", [result.insertId]);
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'admin', recordId: result.insertId, keterangan: `Membuat akun admin: ${username}`, ipAddress: req.ip });
     res.status(201).json({ success: true, message: "Admin berhasil dibuat", data: rows[0] });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
@@ -69,6 +72,8 @@ exports.update = async (req, res) => {
       [nama || null, id]
     );
     const [rows] = await db.query("SELECT id, username, nama, created_at FROM admin WHERE id = ?", [id]);
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'admin', recordId: parseInt(id), keterangan: `Mengupdate admin id: ${id}`, ipAddress: req.ip });
     res.json({ success: true, message: "Admin berhasil diupdate", data: rows[0] });
   } catch (err) {
     console.error("Error update admin:", err);
@@ -80,6 +85,8 @@ exports.remove = async (req, res) => {
   const id = req.params.id;
   try {
     await db.query("DELETE FROM admin WHERE id = ?", [id]);
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'DELETE', tabel: 'admin', recordId: parseInt(id), keterangan: `Menghapus admin id: ${id}`, ipAddress: req.ip });
     res.json({ success: true, message: "Admin berhasil dihapus" });
   } catch (err) {
     console.error("Error delete admin:", err);

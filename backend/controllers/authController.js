@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const logAktivitas = require("../config/logAktivitas");
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
@@ -42,7 +43,8 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" } // Token berlaku selama 1 hari
     );
 
-    // 5. Kirim respons sukses beserta token ke frontend
+    // 5. Catat log login & kirim respons sukses
+    await logAktivitas({ adminId: admin.id, aksi: 'LOGIN', tabel: 'admin', recordId: admin.id, keterangan: `Login berhasil: ${admin.username}`, ipAddress: req.ip });
     res.status(200).json({
       success: true,
       message: "Login berhasil.",

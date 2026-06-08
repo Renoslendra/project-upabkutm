@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const logAktivitas = require("../config/logAktivitas");
 
 exports.list = async (req, res) => {
   try {
@@ -29,6 +30,8 @@ exports.create = async (req, res) => {
       "SELECT id, prodi, total, konseling, selesai, created_at, updated_at FROM statistik WHERE id = ?",
       [result.insertId]
     );
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'statistik', recordId: result.insertId, keterangan: `Menambah statistik prodi: ${prodi}`, ipAddress: req.ip });
     
     res.status(201).json({ success: true, message: "Statistik prodi berhasil ditambahkan", data: rows[0] });
   } catch (err) {
@@ -62,6 +65,8 @@ exports.update = async (req, res) => {
     if (!rows.length) {
       return res.status(404).json({ success: false, message: "Statistik prodi tidak ditemukan" });
     }
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'statistik', recordId: parseInt(id), keterangan: `Mengupdate statistik prodi: ${prodi}`, ipAddress: req.ip });
     
     res.json({ success: true, message: "Statistik prodi berhasil diperbarui", data: rows[0] });
   } catch (err) {
@@ -82,6 +87,8 @@ exports.delete = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "Statistik prodi tidak ditemukan" });
     }
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'DELETE', tabel: 'statistik', recordId: parseInt(id), keterangan: `Menghapus statistik id: ${id}`, ipAddress: req.ip });
     
     res.json({ success: true, message: "Statistik prodi berhasil dihapus" });
   } catch (err) {

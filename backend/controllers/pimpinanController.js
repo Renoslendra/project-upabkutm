@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const logAktivitas = require("../config/logAktivitas");
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
 exports.listPublic = async (req, res) => {
@@ -21,6 +22,8 @@ exports.create = async (req, res) => {
       [nama, role, urutan || 1, foto_url]
     );
     res.status(201).json({ success: true, message: "Data pimpinan berhasil ditambahkan" });
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'CREATE', tabel: 'pimpinan_universitas', recordId: result.insertId, keterangan: `Menambah pimpinan: ${nama}`, ipAddress: req.ip });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
   }
@@ -38,6 +41,8 @@ exports.update = async (req, res) => {
       [nama, role, urutan || 1, foto_url, id]
     );
     res.json({ success: true, message: "Data pimpinan berhasil diupdate" });
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'UPDATE', tabel: 'pimpinan_universitas', recordId: parseInt(id), keterangan: `Mengupdate pimpinan: ${nama}`, ipAddress: req.ip });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
   }
@@ -46,6 +51,8 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     await db.query("DELETE FROM pimpinan_universitas WHERE id=?", [req.params.id]);
+    const adminId = req.admin ? req.admin.id : null;
+    await logAktivitas({ adminId, aksi: 'DELETE', tabel: 'pimpinan_universitas', recordId: parseInt(req.params.id), keterangan: `Menghapus pimpinan id: ${req.params.id}`, ipAddress: req.ip });
     res.json({ success: true, message: "Data berhasil dihapus" });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
