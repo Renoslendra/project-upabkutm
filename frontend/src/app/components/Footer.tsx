@@ -32,7 +32,7 @@ export function Footer() {
         <div className="space-y-4">
           <Logo light />
           <p style={{ color: 'var(--text-on-dark)', opacity: 0.85 }} className="text-sm leading-relaxed">
-            Unit Penunjang Akademik Bimbingan dan Konseling — Universitas Trunodjoyo Madura. Ruang aman untuk cerita, tumbuh, dan pulih.
+            Unit Penunjang Akademik Bimbingan dan Konseling — Universitas Trunojoyo Madura. Ruang aman untuk cerita, tumbuh, dan pulih.
           </p>
           <div className="flex items-center gap-3 mt-2">
             <a href="https://www.instagram.com/konseling_utm/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-2 rounded-full border border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.1)] transition-colors">
@@ -82,7 +82,7 @@ export function Footer() {
           <ul className="space-y-3 text-sm" style={{ color: 'var(--text-on-dark)' }}>
             <li className="flex gap-2">
               <MapPin size={16} className="mt-0.5 shrink-0" />
-              <a href="https://www.google.com/maps/dir//Universitas+Trunodjoyo+Madura,+Jl.+Raya+Telang,+Perumahan+Telang+Inda,+Telang,+Kec.+Kamal,+Kabupaten+Bangkalan,+Jawa+Timur+69162/@-7.242522,112.6317837,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x2dd803dd886bbff5:0x9777ca139b28195d!2m2!1d112.7230807!2d-7.1277548?entry=ttu&g_ep=EgoyMDI2MDQyOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors leading-relaxed">
+              <a href="https://www.google.com/maps/dir//Universitas+Trunojoyo+Madura,+Jl.+Raya+Telang,+Perumahan+Telang+Inda,+Telang,+Kec.+Kamal,+Kabupaten+Bangkalan,+Jawa+Timur+69162/@-7.242522,112.6317837,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x2dd803dd886bbff5:0x9777ca139b28195d!2m2!1d112.7230807!2d-7.1277548?entry=ttu&g_ep=EgoyMDI2MDQyOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors leading-relaxed">
                 Gedung Rektorat lt. 7,<br />Jl. Raya Telang, PO BOX 2,<br />Kamal, Bangkalan, Jatim 69162
               </a>
             </li>
@@ -99,7 +99,7 @@ export function Footer() {
         </div>
       </div>
       <div className="container-x relative z-10 pb-8 text-xs" style={{ color: 'rgba(232,213,224,0.65)' }}>
-        © 2026 UPA-BK Universitas Trunodjoyo Madura. All rights reserved.
+        © 2026 UPA-BK Universitas Trunojoyo Madura. All rights reserved.
       </div>
     </footer>
   );

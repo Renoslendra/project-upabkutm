@@ -11,7 +11,7 @@ export function Logo({ light = false }: { light?: boolean }) {
           UPA-BK <span style={{ color: light ? 'rgba(255,255,255,0.9)' : 'var(--primary)' }}>UTM</span>
         </span>
         <span style={{ fontSize: '0.6rem', color: light ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>
-          Universitas Trunodjoyo Madura
+          Universitas Trunojoyo Madura
         </span>
       </div>
     </div>

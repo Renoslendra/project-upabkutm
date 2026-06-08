@@ -66,7 +66,7 @@ exports.listKegiatan = async (req, res) => {
     const countParams = status ? [q, q, status] : [q, q];
 
     const [rows] = await db.query(
-      `SELECT id, nama_kegiatan, tanggal, lokasi, deskripsi, image_url, status, created_at FROM kegiatan WHERE (nama_kegiatan LIKE ? OR deskripsi LIKE ?)${statusClause} ORDER BY created_at ${order} LIMIT ? OFFSET ?`,
+      `SELECT id, nama_kegiatan, tanggal, lokasi, deskripsi, content_link, image_url, status, created_at FROM kegiatan WHERE (nama_kegiatan LIKE ? OR deskripsi LIKE ?)${statusClause} ORDER BY created_at ${order} LIMIT ? OFFSET ?`,
       params
     );
     const [countRows] = await db.query(

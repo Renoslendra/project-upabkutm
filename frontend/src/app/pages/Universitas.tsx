@@ -340,7 +340,7 @@ export default function Universitas() {
       <section className="py-10">
         <div className="container-x max-w-3xl">
           <div className="grid sm:grid-cols-3 gap-5 text-center text-sm">
-            <a href="https://www.google.com/maps/dir//Universitas+Trunodjoyo+Madura" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 hover:text-[var(--primary)] transition-colors" style={{ color: 'var(--text-secondary)' }}>
+            <a href="https://www.google.com/maps/dir//Universitas+Trunojoyo+Madura" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 hover:text-[var(--primary)] transition-colors" style={{ color: 'var(--text-secondary)' }}>
               <MapPin size={20} style={{ color: 'var(--primary)' }} />
               <span>Jl. Raya Telang PO BOX 2, Kamal – Bangkalan</span>
             </a>

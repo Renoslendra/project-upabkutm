@@ -7,13 +7,39 @@ import { ErrorNotice } from '../components/ErrorNotice';
 
 const filters = ['Semua', 'Akan Datang', 'Selesai'];
 
+type KegiatanItem = {
+  id: number;
+  nama_kegiatan: string;
+  tanggal?: string;
+  lokasi?: string;
+  deskripsi?: string;
+  content_link?: string | null;
+  image_url?: string | null;
+  status?: 'Akan Datang' | 'Selesai';
+};
+
+function getSafeHttpUrl(value?: string | null) {
+  if (!value?.trim()) return '';
+
+  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(value.trim())
+    ? value.trim()
+    : `https://${value.trim()}`;
+
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
 export default function Kegiatan() {
   const [active, setActive] = useState('Semua');
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [page, setPage] = useState(1);
   const [sortOrder, setSortOrder] = useState('Terbaru');
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<KegiatanItem[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,32 +179,36 @@ export default function Kegiatan() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {events.map((e) => (
-                <article key={e.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
-                  <div className="grid sm:grid-cols-[160px_1fr]">
-                    <div className="relative aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
-                      <ImageWithFallback src={e.image_url || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&q=80'} alt={e.nama_kegiatan} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute top-3 right-3 px-3 py-2 rounded-2xl text-center" style={{ background: 'rgba(255,255,255,0.95)', boxShadow: 'var(--shadow-sm)' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{e.tanggal?.split(' ')[0] || '-'}</div>
-                        <div className="text-xs" style={{ color: 'var(--primary)' }}>{e.tanggal?.split(' ')[1] || ''}</div>
+              {events.map((e) => {
+                const detailUrl = getSafeHttpUrl(e.content_link);
+
+                return (
+                  <article key={e.id} className="card-soft p-0 overflow-hidden group bg-white/90 backdrop-blur-2xl border-[1.5px] border-white/80 shadow-[0_15px_30px_rgba(0,0,0,0.08)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300">
+                    <div className="grid sm:grid-cols-[160px_1fr]">
+                      <div className="relative aspect-[3/4] sm:aspect-auto sm:h-full overflow-hidden">
+                        <ImageWithFallback src={e.image_url || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&q=80'} alt={e.nama_kegiatan} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-3 right-3 px-3 py-2 rounded-2xl text-center" style={{ background: 'rgba(255,255,255,0.95)', boxShadow: 'var(--shadow-sm)' }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-dark)' }}>{e.tanggal?.split(' ')[0] || '-'}</div>
+                          <div className="text-xs" style={{ color: 'var(--primary)' }}>{e.tanggal?.split(' ')[1] || ''}</div>
+                        </div>
+                      </div>
+                      <div className="p-6 flex flex-col">
+                        <span className="badge badge-neutral mb-3 self-start">{e.status || 'Akan Datang'}</span>
+                        <h3 className="mb-2" style={{ fontSize: '1.15rem' }}>{e.nama_kegiatan}</h3>
+                        <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
+                          <MapPin size={12} /> {e.lokasi}
+                        </div>
+                        <p className="text-sm mb-4">{e.deskripsi}</p>
+                        {detailUrl ? (
+                          <a href={detailUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold self-start mt-auto inline-flex items-center gap-1.5 hover:gap-2.5 transition-all duration-200" style={{ color: 'var(--primary)' }}>Lihat Detail <ArrowRight size={14} /></a>
+                        ) : (
+                          <span className="text-sm font-semibold self-start mt-auto inline-flex items-center gap-1.5" style={{ color: 'var(--primary)', opacity: 0.6 }}>Lihat Detail <ArrowRight size={14} /></span>
+                        )}
                       </div>
                     </div>
-                    <div className="p-6 flex flex-col">
-                      <span className="badge badge-neutral mb-3 self-start">{e.status || 'Akan Datang'}</span>
-                      <h3 className="mb-2" style={{ fontSize: '1.15rem' }}>{e.nama_kegiatan}</h3>
-                      <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'var(--text-tertiary)' }}>
-                        <MapPin size={12} /> {e.lokasi}
-                      </div>
-                      <p className="text-sm mb-4">{e.deskripsi}</p>
-                      {e.content_link ? (
-                        <a href={e.content_link} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold self-start mt-auto inline-flex items-center gap-1.5 hover:gap-2.5 transition-all duration-200" style={{ color: 'var(--primary)' }}>Lihat Detail <ArrowRight size={14} /></a>
-                      ) : (
-                        <span className="text-sm font-semibold self-start mt-auto inline-flex items-center gap-1.5" style={{ color: 'var(--primary)', opacity: 0.6 }}>Lihat Detail <ArrowRight size={14} /></span>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
 

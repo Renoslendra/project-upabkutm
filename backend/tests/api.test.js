@@ -169,6 +169,13 @@ async function main() {
     expect(response.status < 500, `server returned ${response.status}`);
   });
 
+  await test("HEALTH backend status", async () => {
+    const { response, body } = await request("/api/health");
+    expect(response.status === 200, `expected 200, got ${response.status}`);
+    expect(body.success === true && body.status === "ok", "health response invalid");
+    expect(response.headers.get("cross-origin-resource-policy") === "cross-origin", "uploads/resource policy should allow frontend origin");
+  });
+
   await test("AUTH-02 login wrong password returns 401", async () => {
     await expectStatus("/api/auth/login", 401, {
       method: "POST",
@@ -305,22 +312,44 @@ async function main() {
       tanggal: "01 Jan 2027",
       lokasi: "Aula Test",
       deskripsi: "Deskripsi test",
+      content_link: "example.com/kegiatan-test",
       status: "Akan Datang",
     }, authHeaders());
     expect(create.response.status === 201, `expected 201, got ${create.response.status}`);
     created.kegiatanId = create.body.data.id;
+    expect(create.body.data.content_link === "https://example.com/kegiatan-test", "content_link should be normalized on create");
+
+    const publicList = await expectStatus(`/api/public/kegiatan?q=${encodeURIComponent(`Test Kegiatan ${suffix}`)}`, 200);
+    const publicItem = (publicList.data || []).find((item) => item.id === created.kegiatanId);
+    expect(publicItem, "created kegiatan not found in public list");
+    expect(publicItem.content_link === "https://example.com/kegiatan-test", "public kegiatan should include content_link");
 
     const update = await jsonRequest(`/api/admin/kegiatan/${created.kegiatanId}`, "PUT", {
       nama_kegiatan: `Test Kegiatan Updated ${suffix}`,
       tanggal: "02 Jan 2027",
       lokasi: "Aula Update",
       deskripsi: "Deskripsi update",
+      content_link: "https://example.com/kegiatan-updated",
       status: "Selesai",
     }, authHeaders());
     expect(update.response.status === 200, `expected 200, got ${update.response.status}`);
+    expect(update.body.data.content_link === "https://example.com/kegiatan-updated", "content_link should be saved on update");
 
     await expectStatus(`/api/admin/kegiatan/${created.kegiatanId}`, 200, { method: "DELETE", headers: authHeaders() });
     created.kegiatanId = null;
+  });
+
+  await test("ADM-KGT validation invalid content_link", async () => {
+    await expectStatus("/api/admin/kegiatan", 400, {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        nama_kegiatan: `Test Link Invalid ${suffix}`,
+        tanggal: "01 Jan 2027",
+        lokasi: "Aula",
+        content_link: "ftp://example.com/detail",
+      }),
+    });
   });
 
   await test("ADM-KGT validation nama too short", async () => {

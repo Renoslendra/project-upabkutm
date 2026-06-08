@@ -155,7 +155,7 @@ export default function BantuanCp() {
                   <Clock size={13} /> Senin–Jumat, 08.00–16.00 WIB
                 </div>
                 <a
-                  href="https://www.google.com/maps/dir//Universitas+Trunodjoyo+Madura"
+                  href="https://www.google.com/maps/dir//Universitas+Trunojoyo+Madura"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary inline-flex items-center gap-2 self-start text-sm"

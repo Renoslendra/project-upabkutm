@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Save, X, ExternalLink } from 'lucide-react';
 import { API_BASE_URL } from '../../config';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { FormAlert } from '../components/FormAlert';
@@ -13,8 +13,8 @@ type Kegiatan = {
   tanggal: string;
   lokasi: string;
   deskripsi?: string;
-  content_link?: string;
-  image_url?: string;
+  content_link?: string | null;
+  image_url?: string | null;
   status: 'Akan Datang' | 'Selesai';
 };
 
@@ -28,6 +28,34 @@ const blankKegiatan = (): Kegiatan => ({
   image_url: '',
   status: 'Akan Datang',
 });
+
+function normalizeOptionalUrl(value?: string | null) {
+  if (!value?.trim()) return '';
+
+  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(value.trim())
+    ? value.trim()
+    : `https://${value.trim()}`;
+
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+function formatDisplayUrl(value?: string | null) {
+  const url = normalizeOptionalUrl(value);
+  if (!url) return '';
+
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname === '/' ? '' : parsed.pathname;
+    return `${parsed.hostname}${path}`;
+  } catch {
+    return url;
+  }
+}
 
 export default function AdminKegiatan() {
   const [data, setData] = useState<Kegiatan[]>([]);
@@ -76,7 +104,13 @@ export default function AdminKegiatan() {
   };
 
   const openEdit = (item: Kegiatan) => {
-    setFormData(item);
+    setFormData({
+      ...blankKegiatan(),
+      ...item,
+      deskripsi: item.deskripsi || '',
+      content_link: item.content_link || '',
+      image_url: item.image_url || '',
+    });
     setFormError('');
     setIsNew(false);
     setIsOpen(true);
@@ -87,12 +121,28 @@ export default function AdminKegiatan() {
       setFormError('Nama kegiatan, tanggal, dan lokasi wajib diisi');
       return;
     }
+
+    const contentLink = normalizeOptionalUrl(formData.content_link);
+    if (formData.content_link?.trim() && !contentLink) {
+      setFormError('Link detail kegiatan harus berupa URL http atau https yang valid');
+      return;
+    }
+
     setFormError('');
 
     try {
       setError(null);
       const method = isNew ? 'POST' : 'PUT';
       const url = isNew ? `${API_BASE_URL}/api/admin/kegiatan` : `${API_BASE_URL}/api/admin/kegiatan/${formData.id}`;
+      const payload: Kegiatan = {
+        ...formData,
+        nama_kegiatan: formData.nama_kegiatan.trim(),
+        tanggal: formData.tanggal.trim(),
+        lokasi: formData.lokasi.trim(),
+        deskripsi: formData.deskripsi?.trim() || '',
+        content_link: contentLink,
+        image_url: formData.image_url?.trim() || '',
+      };
 
       const res = await fetch(url, {
         method,
@@ -100,7 +150,7 @@ export default function AdminKegiatan() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const result = await res.json();
@@ -173,6 +223,7 @@ export default function AdminKegiatan() {
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Nama Kegiatan</th>
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Tanggal</th>
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Lokasi</th>
+                <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Link Detail</th>
                 <th className="text-left px-6 py-3 eyebrow text-[var(--primary-dark)]">Status</th>
                 <th className="text-center px-6 py-3 eyebrow text-[var(--primary-dark)]">Aksi</th>
               </tr>
@@ -180,42 +231,62 @@ export default function AdminKegiatan() {
             <tbody className="divide-y divide-[var(--border)]">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-[var(--text-secondary)]">
+                  <td colSpan={6} className="px-6 py-10 text-center text-[var(--text-secondary)]">
                     Memuat kegiatan...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-[var(--text-secondary)]">
+                  <td colSpan={6} className="px-6 py-10 text-center text-[var(--text-secondary)]">
                     Tidak ada kegiatan ditemukan.
                   </td>
                 </tr>
-              ) : filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-[var(--surface-hover)]">
-                  <td className="px-6 py-4 font-medium">{item.nama_kegiatan}</td>
-                  <td className="px-6 py-4 text-[var(--text-secondary)]">{item.tanggal}</td>
-                  <td className="px-6 py-4 text-[var(--text-secondary)]">{item.lokasi}</td>
-                  <td className="px-6 py-4">
-                    <span className={`badge ${item.status === 'Akan Datang' ? 'badge-info' : 'badge-neutral'}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 flex justify-center gap-2">
-                    <button
-                      className="p-2 btn-ghost rounded text-blue-600"
-                      onClick={() => openEdit(item)}
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      className="p-2 btn-ghost rounded text-red-600"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              ) : filtered.map((item) => {
+                const detailUrl = normalizeOptionalUrl(item.content_link);
+
+                return (
+                  <tr key={item.id} className="hover:bg-[var(--surface-hover)]">
+                    <td className="px-6 py-4 font-medium">{item.nama_kegiatan}</td>
+                    <td className="px-6 py-4 text-[var(--text-secondary)]">{item.tanggal}</td>
+                    <td className="px-6 py-4 text-[var(--text-secondary)]">{item.lokasi}</td>
+                    <td className="px-6 py-4">
+                      {detailUrl ? (
+                        <a
+                          href={detailUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex max-w-[220px] items-center gap-1.5 truncate font-medium text-[var(--primary)] hover:underline"
+                          title={detailUrl}
+                        >
+                          <ExternalLink size={14} className="shrink-0" />
+                          <span className="truncate">{formatDisplayUrl(detailUrl)}</span>
+                        </a>
+                      ) : (
+                        <span className="text-[var(--text-tertiary)]">Belum ada</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`badge ${item.status === 'Akan Datang' ? 'badge-info' : 'badge-neutral'}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 flex justify-center gap-2">
+                      <button
+                        className="p-2 btn-ghost rounded text-blue-600"
+                        onClick={() => openEdit(item)}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        className="p-2 btn-ghost rounded text-red-600"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -274,13 +345,18 @@ export default function AdminKegiatan() {
             <div>
               <label className="block text-sm font-medium mb-1">Link Detail Kegiatan</label>
               <input
-                type="url"
+                type="text"
+                inputMode="url"
                 className="input-field w-full"
-                placeholder="https://contoh.com/detail-kegiatan"
+                placeholder="contoh.com/detail-kegiatan"
                 value={formData.content_link || ''}
                 onChange={(e) => setFormData({ ...formData, content_link: e.target.value })}
+                onBlur={() => {
+                  const normalized = normalizeOptionalUrl(formData.content_link);
+                  if (normalized) setFormData({ ...formData, content_link: normalized });
+                }}
               />
-              <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Link eksternal yang akan dibuka saat user klik "Lihat Detail"</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>URL tujuan tombol "Lihat Detail".</p>
             </div>
 
             <div>

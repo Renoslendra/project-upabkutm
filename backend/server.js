@@ -23,10 +23,23 @@ const adminRoutes = require("./routes/manajemenAdminRoutes");
 
 const app = express();
 
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 // 2. Middleware Global
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  origin(origin, callback) {
+    if (!origin || corsOrigins.includes("*") || corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin ${origin} tidak diizinkan oleh CORS`));
+  },
   credentials: true
 }));
 app.use(express.json()); // Untuk menerima request berupa JSON
@@ -49,6 +62,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // 4. Daftarkan Semua Routing
 
 // API Publik & Auth
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, status: "ok" });
+});
+
 app.use("/api/auth/login", loginLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
